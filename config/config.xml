@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><hoehenlinienconfig>
+<config>
+<name>Testconfig</name>
+<python>asfddsf</python>
+<gdal>asfdadsfads</gdal>
+<grass>asdfadsfasfda</grass>
+<grassbin>asdf</grassbin>
+</config>
+<config>
+<name>Testconfig4</name>
+<python>C:\</python>
+<gdal>C:\</gdal>
+<grass>C:\</grass>
+<grassbin>C:\</grassbin>
+</config>
+<config><name>test4</name><python>C:\</python><gdal>H:\</gdal><grass>P:\</grass><grassbin>S:\</grassbin></config></hoehenlinienconfig>
