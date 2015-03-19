@@ -7,7 +7,7 @@
 package bo;
 
 /**
- *
+ * Interface für Beschreibungs-Modelklassen der Höhenlinienkonfiguration
  * @author u203011
  */
 public interface IMODEL {

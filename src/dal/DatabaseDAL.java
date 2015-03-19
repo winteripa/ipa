@@ -13,10 +13,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 /**
- *
+ * Klasse für das Datenbank-Management
  * @author u203011
  */
-public class DatabaseDAL implements IDAL{
+public class DatabaseDAL implements IDAL {
 
     private Connection con = null;
     private static final String DBSCHEMA = "\"raster\"";
@@ -24,11 +24,19 @@ public class DatabaseDAL implements IDAL{
     private static final String KACHELNR = "kachel_nr";
     ArrayList<String> arrKachelnr = null;
     
+    /**
+     * Konstruktor für die Initialisierung der Datenbankverbindung
+     */
     public DatabaseDAL() {
         con = DBConnection.getConnection();
         arrKachelnr = new ArrayList<>();
     }
     
+    /**
+     * Methode für den Erhalt der Kachelnummern aus der Datenbank.
+     * @param wktString Rechteckiger Auschnitt im WKT-Format
+     * @return Liste mit allen Kachelnummern, welche mit dem gewählten Ausschnitt zu tun haben
+     */
     @Override
     public ArrayList<String> getKachelnummer(String wktString) {
         String query = "select k."+ KACHELNR +" from " + DBSCHEMA + "."

@@ -6,14 +6,18 @@
 
 package tools;
 
-import java.util.ArrayList;
 
 /**
- *
+ * Klasse mit nützlichen Methoden für den Umgang mit Formaten
  * @author u203011
  */
 public class FormatTools {
     
+    /**
+     * Methode zur Überprüfung des eingegeben Ausschnitts
+     * @param input Auschnitt-Rechteck
+     * @return Validierungsstatus
+     */
     public boolean isInputRectangle(String input) {
         String[] args = input.split(",");
         NumberTools numTool = new NumberTools();
@@ -55,6 +59,11 @@ public class FormatTools {
         return true;
     }
     
+    /**
+     * Methode zur Umwandlung des Rechteck-Ausschnitts in die WKT-Schreibweise
+     * @param inputRectangle Rechteck-Auschnitt
+     * @return Rechteck-Ausschnitt in der WKT-Schreibweise
+     */
     public String inputRectangleToWKT(String inputRectangle) {
         String[] splittedCoords = inputRectangle.split(",");
         double[] coords = new double[4];

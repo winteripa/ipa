@@ -5,14 +5,23 @@
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
 <AnchorPane id="AnchorPane" prefHeight="479.0" prefWidth="762.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.controller.StatusController">
   <children>
     <AnchorPane id="AnchorPane" layoutX="0.0" layoutY="0.0" prefHeight="479.0" prefWidth="762.0">
       <children>
         <Button fx:id="btnFinish" layoutX="424.0" layoutY="417.0" mnemonicParsing="false" onMouseClicked="#onFinish" text="Abschliessen" />
-        <Label fx:id="mainTitle" layoutX="26.0" layoutY="41.0" text="mainTitle" />
-        <Label fx:id="subTitle" layoutX="40.0" layoutY="64.0" text="subTitle" />
+        <Label fx:id="mainTitle" layoutX="26.0" layoutY="41.0" text="mainTitle">
+          <font>
+            <Font name="System Bold" size="18.0" />
+          </font>
+        </Label>
+        <Label fx:id="subTitle" layoutX="40.0" layoutY="64.0" text="subTitle">
+          <font>
+            <Font size="16.0" />
+          </font>
+        </Label>
         <Button fx:id="btnCancel" layoutX="54.0" layoutY="417.0" mnemonicParsing="false" onMouseClicked="#onCancel" text="Abbrechen" />
         <Label fx:id="lblStatus" alignment="CENTER_RIGHT" layoutX="114.0" layoutY="44.0" prefWidth="559.0" text="label" textAlignment="LEFT" textFill="RED" underline="false" wrapText="false" />
         <ProgressBar fx:id="pbAppProgress" layoutX="245.0" layoutY="296.0" prefWidth="200.0" progress="0.0" />

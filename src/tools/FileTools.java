@@ -6,6 +6,9 @@
 
 package tools;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -14,10 +17,16 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- *
+ * Klasse mit nützlichen Methoden für den Umgang mit Dateien
  * @author u203011
  */
 public class FileTools {
+
+    /**
+     * Methode für das parsen einer XML-Datei
+     * @param path Pfad zur XML-Datei
+     * @return DOM-Objekt der XML-Datei oder null
+     */
     public Document parseXMLFile(String path) {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         
@@ -39,5 +48,30 @@ public class FileTools {
         }
         
         return null;
+    }
+    
+    public void writeLogfile(String logfile, String content) {
+        if(!logfile.endsWith(".log")){
+            logfile = logfile + ".log";
+        }
+        
+        this.writeFile(true, logfile, content);
+    }
+    
+    private void writeFile(boolean append, String filepath, String content) {
+        try {
+            File file = new File(filepath);
+
+            if(!file.exists()) {
+                file.createNewFile();
+            }
+        
+            FileWriter fw = new FileWriter(file, append);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(content + "\n");
+            bw.close();
+        } catch(IOException e) {
+            //Log error
+        }
     }
 }

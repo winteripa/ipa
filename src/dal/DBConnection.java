@@ -11,7 +11,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- *
+ * Klasse für das Datenbankverbindungs-Management
  * @author u203011
  */
 public class DBConnection {
@@ -21,12 +21,19 @@ public class DBConnection {
     private static final String dbName = "gdwh";
     private static String schemaName = "\"raster\"";
     private static String username = "gdwh_open_user";
-    private static String pw = /* pw */;
+    private static String pw = "gdwh_open_user";
     private static String dbtype = "postgresql";
     
+    /**
+     * Private-deklarierter Konstruktor für das Singleton-Entwurfsmuster
+     */
     private DBConnection() {
     }
     
+    /**
+     * Methode, welche eine einzigartige Verbindung zur Datenbank zurückgibt.
+     * @return Verbindungsobjekt zur Datenbank.
+     */
     public static Connection getConnection() {
         if(con == null) {
             con = DbBaseFunctions.connectDatabase(ServerName, dbName, username, pw, dbtype, null);
@@ -35,6 +42,9 @@ public class DBConnection {
         return con;
     }
     
+    /**
+     * Methode, welche die Verbindung zur Datenbank schliesst und das Objekt zerstört.
+     */
     public static void closeConnection(){
         try {
             if(con != null) {

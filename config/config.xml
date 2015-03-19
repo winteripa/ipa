@@ -13,4 +13,4 @@
 <grass>C:\</grass>
 <grassbin>C:\</grassbin>
 </config>
-<config><name>test4</name><python>C:\</python><gdal>H:\</gdal><grass>P:\</grass><grassbin>S:\</grassbin></config></hoehenlinienconfig>
+<config><name>test4</name><python>C:\</python><gdal>H:\</gdal><grass>P:\</grass><grassbin>S:\</grassbin></config><config><name>proper</name><python>C:\Program Files (x86)\Python27\ArcGIS10.2</python><gdal>C:\Program Files (x86)\GDAL</gdal><grass>C:\Program Files (x86)\QGIS Valmiera\apps\grass\grass-6.4.3</grass><grassbin>C:\Program Files (x86)\QGIS Valmiera\bin</grassbin></config></hoehenlinienconfig>

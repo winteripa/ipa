@@ -39,7 +39,7 @@ import org.w3c.dom.NodeList;
 import tools.FileTools;
 
 /**
- * FXML Controller class
+ * Controller-Klasse für das PathGUI
  *
  * @author u203011
  */
@@ -109,7 +109,10 @@ public class PathController implements Initializable {
     private boolean newConfig;
     
     /**
-     * Initializes the controller class.
+     * Initialisierungsmethode des PathControllers. Das Konfigurations-XML wird 
+     * eingelesen und die Elemente werden der Combobox hinzugefügt.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -127,6 +130,29 @@ public class PathController implements Initializable {
         txtGrassBin.setDisable(true);
         txtPython.setDisable(true);
         
+        lblConfigNameStatus.setText("");
+        lblConfigStatus.setText("");
+        lblPythonStatus.setText("");
+        lblGdalStatus.setText("");
+        lblGrassStatus.setText("");
+        lblGrassBinStatus.setText("");
+        
+        mainController.addInterrogationPic(lblConfigNameStatus);
+        mainController.addInterrogationPic(lblConfigStatus);
+        mainController.addInterrogationPic(lblPythonStatus);
+        mainController.addInterrogationPic(lblGdalStatus);
+        mainController.addInterrogationPic(lblGrassStatus);
+        mainController.addInterrogationPic(lblGrassBinStatus);
+        
+        mainController.setTooltip(lblConfigStatus, "Bitte wählen Sie eine "
+                + "Konfiguration aus oder erstellen Sie mittels 'Neu' eine Neue");
+        mainController.setTooltip(lblConfigNameStatus, "Bitte geben Sie einen "
+                + "eindeutigen Konfigurationsnamen an");
+        mainController.setTooltip(lblPythonStatus, "Pfad zur Python-Installation");
+        mainController.setTooltip(lblGdalStatus, "Pfad zur GDAL-Installation");
+        mainController.setTooltip(lblGrassStatus, "Pfad zur GRASS-Installation");
+        mainController.setTooltip(lblGrassBinStatus, "Pfad zum GRASS-BIN Bibliotheksverzeichnis");
+        
         fileTool = new FileTools();
         xmlConfigs = FXCollections.observableArrayList();
         newConfig = false;
@@ -137,6 +163,11 @@ public class PathController implements Initializable {
         //System.getProperty("user.dir")
     }    
 
+    /**
+     * Methode, welches das nächste Fenster anzeigen soll. Alle Konfigurationspfade 
+     * werden kontrolliert und der Höhenlinienkonfiguration hinzugefügt.
+     * @param event Click-Event
+     */
     @FXML
     private void onNextWindow(MouseEvent event) {
         if(checkValues()) {
@@ -158,11 +189,19 @@ public class PathController implements Initializable {
         }
     }
 
+    /**
+     * Methode, welche das Programm abbricht
+     * @param event Click-Event
+     */
     @FXML
     private void onCancel(MouseEvent event) {
         System.exit(0);
     }
 
+    /**
+     * Methode, welche ermöglicht eine neue Konfiguration zu erfassen.
+     * @param event Click-Event
+     */
     @FXML
     private void onConfigNew(MouseEvent event) {
         newConfig = true;
@@ -180,6 +219,10 @@ public class PathController implements Initializable {
         txtPython.setDisable(false);
     }
 
+    /**
+     * Methode, welche einen Dialog zum Auswählen des Python-Installationspfades aufruft.
+     * @param event Click-Event
+     */
     @FXML
     private void onPythonChoose(MouseEvent event) {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -191,6 +234,10 @@ public class PathController implements Initializable {
         }
     }
 
+    /**
+     * Methode, welche einen Dialog zum Auswählen des GDAL-Installationspfades aufruft.
+     * @param event Click-Event
+     */
     @FXML
     private void onGdalChoose(MouseEvent event) {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -202,6 +249,10 @@ public class PathController implements Initializable {
         }
     }
 
+    /**
+     * Methode, welche einen Dialog zum Auswählen des GRASS-Installationspfades aufruft.
+     * @param event Click-Event
+     */
     @FXML
     private void onGrassChoose(MouseEvent event) {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -213,6 +264,10 @@ public class PathController implements Initializable {
         }
     }
 
+    /**
+     * Methode, welche einen Dialog zum Auswählen des GRASS-BIN Bibliothekspfades aufruft.
+     * @param event Click-Event
+     */
     @FXML
     private void onGrassBinChoose(MouseEvent event) {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -224,6 +279,10 @@ public class PathController implements Initializable {
         }
     }
     
+    /**
+     * Methode, welche Änderungen nach der Auswahl einer neuen Konfiguration ausführt.
+     * @param event Click-Event
+     */
     @FXML
     private void onConfigChanged(ActionEvent event) {
         Configuration config = cbConfig.getSelectionModel().getSelectedItem();
@@ -235,6 +294,9 @@ public class PathController implements Initializable {
         txtPython.setText(config.getPythonpath());
     }
     
+    /**
+     * Methode, welche das Konfiguration-XML einliest
+     */
     private void readConfigXML() {
         System.out.println(configXML.getDocumentElement().getNodeName());
         System.out.println(configXML.getElementsByTagName("hoehenlinienconfig"));
@@ -298,41 +360,60 @@ public class PathController implements Initializable {
         cbConfig.setItems(xmlConfigs);
     }
     
+    /**
+     * Methode zur Überprüfung der Konfigurationspfade
+     * @return Validierungsstatus
+     */
     private boolean checkValues() {
         boolean error = false;
         this.resetStatusColors();
         
         if(txtConfigName == null || txtConfigName.getText().isEmpty()) {
             error = true;
-            this.changeStatus(lblConfigNameStatus);
+            //this.changeStatus(lblConfigNameStatus);
+            mainController.addExclamationPic(lblConfigNameStatus);
+        } else {
+            mainController.addInterrogationPic(lblConfigNameStatus);
         }
         
         File pythonpath = new File(txtPython.getText());
         
         if(txtPython == null || !pythonpath.isDirectory()) {
             error = true;
-            this.changeStatus(lblPythonStatus);
+            //this.changeStatus(lblPythonStatus);
+            mainController.addExclamationPic(lblPythonStatus);
+        } else {
+            mainController.addInterrogationPic(lblPythonStatus);
         }
         
         File gdalpath = new File(txtGdal.getText());
         
         if(txtGdal == null || !gdalpath.isDirectory()) {
             error = true;
-            this.changeStatus(lblGdalStatus);
+            //this.changeStatus(lblGdalStatus);
+            mainController.addExclamationPic(lblGdalStatus);
+        } else {
+            mainController.addInterrogationPic(lblGdalStatus);
         }
         
         File grasspath = new File(txtGrass.getText());
         
         if(txtGrass == null || !grasspath.isDirectory()) {
             error = true;
-            this.changeStatus(lblGrassStatus);
+            //this.changeStatus(lblGrassStatus);
+            mainController.addExclamationPic(lblGrassStatus);
+        } else {
+            mainController.addInterrogationPic(lblGrassStatus);
         }
         
         File grassbinpath = new File(txtGrassBin.getText());
         
         if(txtGrassBin == null || !grassbinpath.isDirectory()) {
             error = true;
-            this.changeStatus(lblGrassBinStatus);
+            //this.changeStatus(lblGrassBinStatus);
+            mainController.addExclamationPic(lblGrassBinStatus);
+        } else {
+            mainController.addInterrogationPic(lblGrassBinStatus);
         }
         
         if (error) {
@@ -345,20 +426,30 @@ public class PathController implements Initializable {
         return true;
     }
     
+    /**
+     * Methode, welches die Farbe eines Labels in Rot ändert
+     * @param lbl Label
+     */
     private void changeStatus(Label lbl) {
         lbl.setTextFill(Color.web("#FF0101"));
     }
     
+    /**
+     * Methode zum Zurücksetzen der Label-Farben
+     */
     private void resetStatusColors() {
-        lblConfigStatus.setTextFill(Color.web("#000000"));
+        /*lblConfigStatus.setTextFill(Color.web("#000000"));
         lblConfigNameStatus.setTextFill(Color.web("#000000"));
         lblPythonStatus.setTextFill(Color.web("#000000"));
         lblGdalStatus.setTextFill(Color.web("#000000"));
         lblGrassStatus.setTextFill(Color.web("#000000"));
-        lblGrassBinStatus.setTextFill(Color.web("#000000"));
+        lblGrassBinStatus.setTextFill(Color.web("#000000"));*/
         lblStatus.setVisible(false);
     }
     
+    /**
+     * Methode zur Speicherung einer neuen Konfiguration
+     */
     private void saveNewConfig() {
         Element rootElement = configXML.getDocumentElement();
         
@@ -390,6 +481,10 @@ public class PathController implements Initializable {
         transformXML();
     }
     
+    /**
+     * Methode zur Überprüfung, ob eine vorhandene Konfiguration editiert wurde.
+     * @return Modifizierungsstatus
+     */
     private boolean isModifiedConfig() {
         Configuration config = cbConfig.getSelectionModel().getSelectedItem();
         int modified = 0;
@@ -421,6 +516,9 @@ public class PathController implements Initializable {
         return false;
     }
     
+    /**
+     * Methode, welche eine modifizierte Konfiguration in die XML-Datei speichert.
+     */
     private void saveModifiedConfig() {
         if(isModifiedConfig()) {
             //try {
@@ -461,6 +559,9 @@ public class PathController implements Initializable {
         }
     }
     
+    /**
+     * Methode, welche eine XML-Datei nach dem Editieren transformiert
+     */
     private void transformXML() {
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
@@ -473,5 +574,65 @@ public class PathController implements Initializable {
         } catch (TransformerFactoryConfigurationError ex) {
             //Log error
         }
+    }
+
+    @FXML
+    private void onConfigHover(MouseEvent event) {
+        mainController.showTooltipOnPosition(lblConfigStatus);
+    }
+
+    @FXML
+    private void onConfigExit(MouseEvent event) {
+        lblConfigStatus.getTooltip().hide();
+    }
+
+    @FXML
+    private void onConfigNameHover(MouseEvent event) {
+        mainController.showTooltipOnPosition(lblConfigNameStatus);
+    }
+
+    @FXML
+    private void onConfigNameExit(MouseEvent event) {
+        lblConfigNameStatus.getTooltip().hide();
+    }
+
+    @FXML
+    private void onPythonHover(MouseEvent event) {
+        mainController.showTooltipOnPosition(lblPythonStatus);
+    }
+
+    @FXML
+    private void onPythonExit(MouseEvent event) {
+        lblPythonStatus.getTooltip().hide();
+    }
+
+    @FXML
+    private void onGdalHover(MouseEvent event) {
+        mainController.showTooltipOnPosition(lblGdalStatus);
+    }
+
+    @FXML
+    private void onGdalExit(MouseEvent event) {
+        lblGdalStatus.getTooltip().hide();
+    }
+
+    @FXML
+    private void onGrassHover(MouseEvent event) {
+        mainController.showTooltipOnPosition(lblGrassStatus);
+    }
+
+    @FXML
+    private void onGrassExit(MouseEvent event) {
+        lblGrassStatus.getTooltip().hide();
+    }
+
+    @FXML
+    private void onGrassBinHover(MouseEvent event) {
+        mainController.showTooltipOnPosition(lblGrassBinStatus);
+    }
+
+    @FXML
+    private void onGrassBinExit(MouseEvent event) {
+        lblGrassBinStatus.getTooltip().hide();
     }
 }

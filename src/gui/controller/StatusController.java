@@ -6,6 +6,7 @@
 
 package gui.controller;
 
+import base.DisplayMethods;
 import bl.HoehenlinienManagement;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -20,7 +21,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 
 /**
- * FXML Controller class
+ * Controller-Klasse für das StatusGUI
  *
  * @author u203011
  */
@@ -54,16 +55,21 @@ public class StatusController implements Initializable {
 
     private MainController mainController;
     private HoehenlinienManagement hm;
+    private DisplayMethods logger;
     
     /**
-     * Initializes the controller class.
+     * Initialisierungsmethode des Controllers
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         mainController = MainController.getMainController(null);
         
-        hm = new HoehenlinienManagement(mainController.getHoehenlinienConfig(), this);
+        logger = mainController.getStandaloneLogger();
+        
+        hm = new HoehenlinienManagement(mainController.getHoehenlinienConfig(), this, logger);
         
         mainTitle.setText("Höhenlinien bestellen");
         subTitle.setText("Höhenlinien erstellen");
@@ -71,38 +77,70 @@ public class StatusController implements Initializable {
         btnFinish.setDisable(true);
     }    
 
+    /**
+     * Methode, welche das Programm nach erfolgreicher Ausführung beendet.
+     * @param event Click-Event
+     */
     @FXML
     private void onFinish(MouseEvent event) {
         System.exit(0);
     }
 
+    /**
+     * Methode, welche das Programm abbricht.
+     * @param event Click-Event
+     */
     @FXML
     private void onCancel(MouseEvent event) {
         System.exit(0);
     }
 
+    /**
+     * Methode, welche den Bestellungsprozess startet
+     * @param event Click-Event
+     */
     @FXML
     private void onOrder(MouseEvent event) {
         Thread th = new Thread(hm);
         th.start();
     }
 
+    /**
+     * Getter-Methode für den Beenden-Knopf
+     * @return Beenden-Knopf
+     */
     public Button getBtnFinish() {
         return btnFinish;
     }
 
+    /**
+     * Getter-Methode für das Status-Label
+     * @return Status-Label
+     */
     public Label getLblStatus() {
         return lblStatus;
     }
 
-    public Label getLblAppProgress() {
-        return lblAppProgress;
+    /**
+     * Getter-Methode für den Fortschrittsbalken
+     * @return Fortschrittsbalken
+     */
+    public ProgressBar getPbAppProgress() {
+        return pbAppProgress;
     }
 
+    /**
+     * Getter-Methode für das Statusnachrichten-Fenster
+     * @return Statusnachrichten-Fenster
+     */
     public TextArea getTxtStatus() {
         return txtStatus;
     }
 
+    /**
+     * Getter-Methode für den Bestell-Knopf
+     * @return Bestell-Knopf
+     */
     public Button getBtnOrder() {
         return btnOrder;
     }

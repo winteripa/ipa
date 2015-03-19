@@ -12,23 +12,23 @@
   <children>
     <Label fx:id="lblOrdercode" layoutX="66.0" layoutY="93.0" text="Bestellnummer" />
     <TextField fx:id="txtOrdercode" layoutX="190.0" layoutY="90.0" prefWidth="311.0" />
-    <Label fx:id="lblOrderCodeStatus" layoutX="518.0" layoutY="93.0" prefWidth="216.0" text="Format: Zahl" />
+    <Label fx:id="lblOrderCodeStatus" layoutX="518.0" layoutY="93.0" onMouseExited="#onOrderCodeExit" onMouseMoved="#onOrderCodeHover" prefWidth="216.0" text="Format: Zahl" />
     <Label fx:id="lblKoordRectangle" layoutX="66.0" layoutY="129.0" text="Koordinatenrechteck" />
-    <Label fx:id="lblInputStatus" layoutX="518.0" layoutY="129.0" prefWidth="216.0" text="Format: xmin, ymin, xmax, ymax" />
+    <Label fx:id="lblInputStatus" layoutX="518.0" layoutY="129.0" onMouseExited="#onInputExit" onMouseMoved="#onInputHover" prefWidth="216.0" text="Format: xmin, ymin, xmax, ymax" />
     <Label fx:id="lblOutput" layoutX="66.0" layoutY="162.0" text="Ausgabe" />
-    <Label fx:id="lblOutputStatus" layoutX="518.0" layoutY="162.0" prefWidth="216.0" text="Pfad-Angabe" />
+    <Label fx:id="lblOutputStatus" layoutX="518.0" layoutY="162.0" onMouseExited="#onOutputExit" onMouseMoved="#onOutputHover" prefWidth="216.0" text="Pfad-Angabe" />
     <Label fx:id="lblAequi" layoutX="66.0" layoutY="198.0" text="Äquidistanz" />
-    <Label fx:id="lblAequiStatus" layoutX="518.0" layoutY="198.0" prefWidth="216.0" text="Format: Zahl (max 100 m)" />
+    <Label fx:id="lblAequiStatus" layoutX="518.0" layoutY="198.0" onMouseExited="#onAequiExit" onMouseMoved="#onAequiHover" prefWidth="216.0" text="Format: Zahl (max 100 m)" />
     <Label fx:id="lblSmoothOptions" layoutX="66.0" layoutY="230.0" text="Smooth-Optionen" />
     <Label fx:id="lblThinning" layoutX="66.0" layoutY="259.0" text="Ausdünnen" />
     <Label fx:id="lbl3D" layoutX="66.0" layoutY="290.0" text="3D-Visualisierung" />
     <Label fx:id="lblLidar" layoutX="66.0" layoutY="321.0" text="Pfad LiDAR-Daten" />
     <Label fx:id="lblLog" layoutX="66.0" layoutY="354.0" text="Pfad Logdatei" />
-    <Label fx:id="lblSmoothStatus" layoutX="518.0" layoutY="230.0" prefWidth="216.0" text="Auswahl" />
-    <Label fx:id="lblThinningStatus" layoutX="518.0" layoutY="259.0" prefWidth="230.0" text="Format: Zahl (0 heisst keine Ausdünnung)" />
-    <Label fx:id="lbl3DStatus" layoutX="518.0" layoutY="290.0" prefWidth="216.0" text="Ja oder Nein" />
-    <Label fx:id="lblLidarStatus" layoutX="518.0" layoutY="321.0" prefWidth="216.0" text="LiDAR-Pfadangabe" />
-    <Label fx:id="lblLogStatus" layoutX="518.0" layoutY="354.0" prefWidth="216.0" text="Logdatei-Pfadangabe" />
+    <Label fx:id="lblSmoothStatus" layoutX="518.0" layoutY="230.0" onMouseExited="#onSmoothExit" onMouseMoved="#onSmoothHover" prefWidth="216.0" text="Auswahl" />
+    <Label fx:id="lblThinningStatus" layoutX="518.0" layoutY="259.0" onMouseExited="#onThinningExit" onMouseMoved="#onThinningHover" prefWidth="230.0" text="Format: Zahl (0 heisst keine Ausdünnung)" />
+    <Label fx:id="lbl3DStatus" layoutX="518.0" layoutY="290.0" onMouseExited="#on3DExit" onMouseMoved="#on3DHover" prefWidth="216.0" text="Ja oder Nein" />
+    <Label fx:id="lblLidarStatus" layoutX="518.0" layoutY="321.0" onMouseExited="#onLidarExit" onMouseMoved="#onLidarHover" prefWidth="216.0" text="LiDAR-Pfadangabe" />
+    <Label fx:id="lblLogStatus" layoutX="518.0" layoutY="354.0" onMouseExited="#onLogExit" onMouseMoved="#onLogHover" prefWidth="216.0" text="Logdatei-Pfadangabe" />
     <Button fx:id="btnNext" layoutX="436.0" layoutY="403.0" mnemonicParsing="false" onMouseClicked="#onNextWindow" text="Nächstes Fenster" />
     <Label fx:id="mainTitle" layoutX="38.0" layoutY="27.0" text="mainTitle">
       <font>

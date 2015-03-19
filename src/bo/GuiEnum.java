@@ -7,7 +7,7 @@
 package bo;
 
 /**
- *
+ * Enum für die Repräsentierung der einzelnen GUIs
  * @author u203011
  */
 public enum GuiEnum {
