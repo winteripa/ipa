@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.DirectoryScanner;
+import tools.FileTools;
 
 /**
  * Modul-Klasse für die Erstellung der Höhenlinien
@@ -28,12 +29,15 @@ public class ModulContourlines {
     private DisplayMethods logger = null;
     private String gdalbuildvrt = null;
     private String gdaltranslate = null;
+    private String gdalcontour = null;
     private String lidardataPath = null;
     private String vrtRectangle = null;
     private String fittedTif = null;
     private String baseData = null;
     private ArrayList<String> arrKachelnr = null;
     private ArrayList<String> kacheln = null;
+    private ArrayList<String> filesToDelete = null;
+    private FileTools fileTool = null;
 
     /**
      * Konstruktor der Modul-Klasse
@@ -49,6 +53,8 @@ public class ModulContourlines {
         this.logger = logger;
         this.arrKachelnr = arrKachelnr;
         this.kacheln = new ArrayList<>();
+        this.filesToDelete = new ArrayList<>();
+        this.fileTool = new FileTools();
     }
 
     /**
@@ -68,23 +74,104 @@ public class ModulContourlines {
         }
         
         if(baseResult) {
+            gdalcontour = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdal_contour.exe";
+            
             if(!makeThinning()) {
                 errMsg += "Fehler beim Ausdünnen der Punkte.\n---------------------\n"
                         + "Bitte melden Sie sich beim Administrator und schicken Sie "
                         + "ihm das Logfile.";
-                logger.writeErrorStatus(errMsg);
+                logger.writeLog(errMsg);
 
+                logger.writeErrorStatus("Ausschnitt konnte nicht ausgedünnt werden.");
+                
+                return false;
+            }
+            
+            if(!makeContourlines()) {
+                errMsg += "Fehler beim Erstellen der Höhenlinien.\n-------------------------\n"
+                        + "Bitte kontrollieren Sie den ausgeführten Befehl auf "
+                        + "seine Funktionalität oder wenden Sie sich danach an "
+                        + "Ihren Administrator und senden ihm Ihr Logfile.";
+                logger.writeLog(errMsg);
+                logger.writeLog("");
+                
+                logger.writeErrorStatus("Höhenlinien konnten nicht erstellt werden.");
+                
                 return false;
             }
         } else {
             errMsg += "Fehler beim Erstellen der Datengrundlage.";
             
-            logger.writeErrorStatus(errMsg);
+            logger.writeLog(errMsg);
             
             return false;
         }
         
         return true;
+    }
+    
+    private boolean makeContourlines() {
+        try {
+            String flag3D = "";
+            
+            logger.writeLog("Höhenlinien werden aus dem Auschnitt erstellt");
+            logger.writeLog("-------------------------");
+            logger.writeLog("");
+            
+            String source = baseData;
+            baseData = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\contourlines.shp";
+            
+            if(!this.fileTool.deleteExistingFile(baseData)) {
+                logger.writeLog("Es existiert eine alte 'contourlines.shp'-Datei. "
+                        + "Das Programm kann diese nicht löschen. Bitte löschen "
+                        + "Sie die Datei manuell und versuchen Sie den Bestellvorgang "
+                        + "erneut auszuführen");
+                logger.writeLog("");
+                return false;
+            }
+            
+            if(hConfig.getInputModel().isForce3D()) {
+                flag3D = "-3d";
+            }
+            
+            logger.writeLog("Input: " + source);
+            logger.writeLog("Output: " + baseData);
+            logger.writeLog("");
+            
+            String query = gdalcontour + " -i " + hConfig.getInputModel().getAequidistance()
+                    + " -a hoehe " + flag3D + " " + source + " " + baseData;
+            
+            logger.writeLog("Befehl: " + query);
+            logger.writeLog("");
+            
+            Process process = Runtime.getRuntime().exec(query);
+            
+            process.waitFor();
+            
+            String errResult = "Die Höhenlinien konnten nicht korrekt erstellt werden.";
+            
+            if(this.doesResultExits(baseData, errResult)) {
+                logger.writeLog("Höhenlinien wurden erstellt.");
+
+                logger.writeStatus("Höhenlinien wurden erstellt.");
+                
+                return true;
+            }
+            
+            return false;
+        } catch (IOException ex) {
+            String exception = "Eine Exception ist aufgetreten beim Ausführen "
+                    + "des Kommandozeilen-Befehls 'gdal_contour':\n" + ex.getMessage()
+                    + "\n ------------------------------";
+            logger.writeLog(exception);
+        } catch (InterruptedException ex) {
+            String exception = "Eine Exception ist aufgetreten während dem "
+                    + "Ausführen von 'gdal_contour', das Kommando wurde abgebrochen:" +
+                    ex.getMessage()+ "\n ------------------------------";
+            logger.writeLog(exception);
+        }
+        
+        return false;
     }
     
     private boolean makeThinning() {
@@ -112,18 +199,28 @@ public class ModulContourlines {
                 Process process = Runtime.getRuntime().exec(query);
                 
                 process.waitFor();
-                logger.writeLog("Ausdünnung wurde durchgeführt.\n ----------------");
-                return true;
+                
+                String errResult = "Der Ausschnitt konnte nicht korrekt ausgedünnt werden.";
+            
+                if(this.doesResultExits(baseData, errResult)) {
+                    logger.writeLog("Ausdünnung wurde durchgeführt.\n ----------------");
+
+                    this.logger.writeStatus("Ausschnitt wurde ausgedünnt.");
+                    
+                    return true;
+                }
+                
+                return false;
             } catch (IOException ex) {
                 String exception = "Eine Exception ist aufgetreten beim Ausführen "
                     + "des Kommandozeilen-Befehls 'gdal_translate':\n" + ex.getMessage()
                     + "\n ------------------------------";
-                logger.writeErrorStatus(exception);
+                logger.writeLog(exception);
             } catch (InterruptedException ex) {
                 String exception = "Eine Exception ist aufgetreten während dem "
                     + "Ausführen von 'gdal_translate', das Kommando wurde abgebrochen:" +
                     ex.getMessage()+ "\n ------------------------------";
-                logger.writeErrorStatus(exception);
+                logger.writeLog(exception);
             }
         } else {
             return true;
@@ -141,40 +238,52 @@ public class ModulContourlines {
         String errMsg = "Fehler beim Erstellen des Ausschnitts:\n-----------------\n";
         
         if(this.collectKacheln()) {
+            this.logger.writeStatus("Kacheln wurden bezogen.");
+            
             if(this.generateVRT()) {
+                this.logger.writeStatus("Virtuelles Raster wurde erstellt.");
+                
                 if(this.translateVRTToTiff()){
+                    this.logger.writeStatus("Raster wurde ausgeschnitten.");
+                    
                     if(!this.translateTiffToASC()){
                         errMsg += "Die ASC-Datei zum Rechnen der Höhenlinien "
                                 + "konnte nicht erstellt werden. Bitte melden Sie sich beim "
                                 + "Administrator und schicken Sie ihm das Logfile";
-                        logger.writeErrorStatus(errMsg);
+                        logger.writeLog(errMsg);
                         
                         return false;
                     }
                 } else {
+                    this.logger.writeErrorStatus("Raster konnte nicht ausgeschnitten werden.");
+                    
                     errMsg += "Die VRT-Datei konnte nicht auf den gewählten Ausschnitt "
                             + "zugeschnitten werden. Bitte melden Sie sich beim "
                             + "Administrator und schicken Sie ihm das Logfile";
-                    logger.writeErrorStatus(errMsg);
+                    logger.writeLog(errMsg);
                     
                     return false;
                 }
             } else {
+                this.logger.writeErrorStatus("Virtuelles Raster konnte nicht erstellt werden.");
+                
                 errMsg += "Die VRT-Datei konnte nicht erstellt werden.\n"
                         + "Bitte prüfen Sie, ob Sie den korrekten GDAL-Installationspfad "
                         + "angegeben haben. Falls dies nicht die Ursache ist, "
                         + "so melden Sie sich bitte beim Administrator und schicken "
                         + "Sie ihm das Logfile";
-                logger.writeErrorStatus(errMsg);
+                logger.writeLog(errMsg);
                 
                 return false;
             }
         } else {
+            this.logger.writeErrorStatus("Kacheln konnten nicht bezogen werden.");
+            
             errMsg += "Die LiDAR-Daten konnten nicht bezogen werden.\n" 
                     + "Bitte prüfen Sie, ob der LiDAR-Datenpfad korrekt ist und "
                     + "ob die LiDAR-Daten bezogen werden können.";
             
-            logger.writeErrorStatus(errMsg);
+            logger.writeLog(errMsg);
             
             return false;
         }
@@ -205,18 +314,25 @@ public class ModulContourlines {
             
             process.waitFor();
             
-            logger.writeLog("TIFF-Datei wurde umgewandelt.\n ----------------");
-            return true;
+            String errResult = "Die TIFF-Datei konnte nicht korrekt umgewandelt werden.";
+            
+            if(this.doesResultExits(baseData, errResult)) {
+                logger.writeLog("TIFF-Datei wurde umgewandelt.\n ----------------");
+                
+                return true;
+            }
+            
+            return false;
         } catch (IOException ex) {
             String exception = "Eine Exception ist aufgetreten beim Ausführen "
                     + "des Kommandozeilen-Befehls 'gdal_translate':\n" + ex.getMessage()
                     + "\n ------------------------------";
-            logger.writeErrorStatus(exception);
+            logger.writeLog(exception);
         } catch (InterruptedException ex) {
             String exception = "Eine Exception ist aufgetreten während dem "
                     + "Ausführen von 'gdal_translate', das Kommando wurde abgebrochen:" +
                     ex.getMessage()+ "\n ------------------------------";
-            logger.writeErrorStatus(exception);
+            logger.writeLog(exception);
         }
         
         return false;
@@ -249,18 +365,26 @@ public class ModulContourlines {
             
             process.waitFor();
             
-            logger.writeLog("VRT-Datei wurde umgewandelt und zugeschnitten.\n ----------------");
-            return true;
+            String errResult = "Die VRT-Datei konnte nicht korrekt umgewandelt und "
+                    + "zugeschnitten werden.";
+            
+            if(this.doesResultExits(fittedTif, errResult)) {
+                logger.writeLog("VRT-Datei wurde umgewandelt und zugeschnitten.\n ----------------");
+                
+                return true;
+            }
+            
+            return false;
         } catch (IOException ex) {
             String exception = "Eine Exception ist aufgetreten beim Ausführen "
                     + "des Kommandozeilen-Befehls 'gdal_translate':\n" + ex.getMessage()
                     + "\n ------------------------------";
-            logger.writeErrorStatus(exception);
+            logger.writeLog(exception);
         } catch (InterruptedException ex) {
             String exception = "Eine Exception ist aufgetreten während dem "
                     + "Ausführen von 'gdal_translate', das Kommando wurde abgebrochen:" +
                     ex.getMessage()+ "\n ------------------------------";
-            logger.writeErrorStatus(exception);
+            logger.writeLog(exception);
         }
         
         return false;
@@ -291,20 +415,26 @@ public class ModulContourlines {
             
             process.waitFor();
             
-            logger.writeLog("VRT-Datei ist erstellt worden.\n ----------------");
+            String errResult = "Die VRT-Datei konnte nicht korrekt erstellt werden.";
             
-            return true;
+            if(this.doesResultExits(vrtRectangle, errResult)) {
+                logger.writeLog("VRT-Datei ist erstellt worden.\n ----------------");
+                
+                return true;
+            }
+            
+            return false;
         } catch (IOException ex) {
             String exception = "Eine Exception ist aufgetreten beim Ausführen "
                     + "des Kommandozeilen-Befehls 'gdalbuildvrt':\n" + ex.getMessage()
                     + "\n ------------------------------";
             
-            logger.writeErrorStatus(exception);
+            logger.writeLog(exception);
         } catch (InterruptedException ex) {
             String exception = "Eine Exception ist aufgetreten während dem "
                     + "Ausführen von 'gdalbuildvrt', das Kommando wurde abgebrochen:" +
                     ex.getMessage()+ "\n ------------------------------";
-            logger.writeErrorStatus(exception);
+            logger.writeLog(exception);
         }
         
         return false;
@@ -337,9 +467,31 @@ public class ModulContourlines {
                 
                 this.kacheln.addAll(Arrays.asList(files));
             } else {
-                logger.writeErrorStatus("Eine Falsche Kachelnummer wurde registriert.");
+                logger.writeLog("Eine Falsche Kachelnummer wurde registriert.");
                 return false;
             }
+        }
+        
+        if(kacheln.isEmpty()) {
+            logger.writeLog("Für den Ausschnitt wurden keine Kacheln gefunden. "
+                    + "Bitte überprüfen Sie, ob der Ausschnitt im Kanton "
+                    + "Baselland liegt. Falls dies nicht weiterhilft, melden "
+                    + "Sie sich bitte beim Administrator und schicken Sie ihm "
+                    + "Ihr Logfile.");
+            logger.writeLog("");
+            
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private boolean doesResultExits(String filepath, String errMsg) {
+        if(!this.fileTool.doesFileExists(filepath)) {
+            this.logger.writeLog(errMsg);
+            this.logger.writeLog("");
+            
+            return false;
         }
         
         return true;

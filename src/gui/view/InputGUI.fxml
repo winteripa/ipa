@@ -8,44 +8,44 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="479.0" prefWidth="762.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.controller.InputController">
+<AnchorPane id="AnchorPane" prefHeight="479.0" prefWidth="581.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.controller.InputController">
   <children>
-    <Label fx:id="lblOrdercode" layoutX="66.0" layoutY="93.0" text="Bestellnummer" />
-    <TextField fx:id="txtOrdercode" layoutX="190.0" layoutY="90.0" prefWidth="311.0" />
-    <Label fx:id="lblOrderCodeStatus" layoutX="518.0" layoutY="93.0" onMouseExited="#onOrderCodeExit" onMouseMoved="#onOrderCodeHover" prefWidth="216.0" text="Format: Zahl" />
-    <Label fx:id="lblKoordRectangle" layoutX="66.0" layoutY="129.0" text="Koordinatenrechteck" />
-    <Label fx:id="lblInputStatus" layoutX="518.0" layoutY="129.0" onMouseExited="#onInputExit" onMouseMoved="#onInputHover" prefWidth="216.0" text="Format: xmin, ymin, xmax, ymax" />
-    <Label fx:id="lblOutput" layoutX="66.0" layoutY="162.0" text="Ausgabe" />
-    <Label fx:id="lblOutputStatus" layoutX="518.0" layoutY="162.0" onMouseExited="#onOutputExit" onMouseMoved="#onOutputHover" prefWidth="216.0" text="Pfad-Angabe" />
-    <Label fx:id="lblAequi" layoutX="66.0" layoutY="198.0" text="Äquidistanz" />
-    <Label fx:id="lblAequiStatus" layoutX="518.0" layoutY="198.0" onMouseExited="#onAequiExit" onMouseMoved="#onAequiHover" prefWidth="216.0" text="Format: Zahl (max 100 m)" />
-    <Label fx:id="lblSmoothOptions" layoutX="66.0" layoutY="230.0" text="Smooth-Optionen" />
-    <Label fx:id="lblThinning" layoutX="66.0" layoutY="259.0" text="Ausdünnen" />
-    <Label fx:id="lbl3D" layoutX="66.0" layoutY="290.0" text="3D-Visualisierung" />
-    <Label fx:id="lblLidar" layoutX="66.0" layoutY="321.0" text="Pfad LiDAR-Daten" />
-    <Label fx:id="lblLog" layoutX="66.0" layoutY="354.0" text="Pfad Logdatei" />
-    <Label fx:id="lblSmoothStatus" layoutX="518.0" layoutY="230.0" onMouseExited="#onSmoothExit" onMouseMoved="#onSmoothHover" prefWidth="216.0" text="Auswahl" />
-    <Label fx:id="lblThinningStatus" layoutX="518.0" layoutY="259.0" onMouseExited="#onThinningExit" onMouseMoved="#onThinningHover" prefWidth="230.0" text="Format: Zahl (0 heisst keine Ausdünnung)" />
-    <Label fx:id="lbl3DStatus" layoutX="518.0" layoutY="290.0" onMouseExited="#on3DExit" onMouseMoved="#on3DHover" prefWidth="216.0" text="Ja oder Nein" />
-    <Label fx:id="lblLidarStatus" layoutX="518.0" layoutY="321.0" onMouseExited="#onLidarExit" onMouseMoved="#onLidarHover" prefWidth="216.0" text="LiDAR-Pfadangabe" />
-    <Label fx:id="lblLogStatus" layoutX="518.0" layoutY="354.0" onMouseExited="#onLogExit" onMouseMoved="#onLogHover" prefWidth="216.0" text="Logdatei-Pfadangabe" />
-    <Button fx:id="btnNext" layoutX="436.0" layoutY="403.0" mnemonicParsing="false" onMouseClicked="#onNextWindow" text="Nächstes Fenster" />
+    <Label fx:id="lblOrdercode" layoutX="38.0" layoutY="91.0" text="Bestellnummer" />
+    <TextField fx:id="txtOrdercode" layoutX="162.0" layoutY="88.0" prefWidth="338.0" />
+    <Label fx:id="lblOrderCodeStatus" layoutX="519.0" layoutY="91.0" onMouseExited="#onOrderCodeExit" onMouseMoved="#onOrderCodeHover" prefWidth="216.0" text="Format: Zahl" />
+    <Label fx:id="lblKoordRectangle" layoutX="38.0" layoutY="127.0" text="Koordinatenrechteck" />
+    <Label fx:id="lblInputStatus" layoutX="519.0" layoutY="127.0" onMouseExited="#onInputExit" onMouseMoved="#onInputHover" prefWidth="216.0" text="Format: xmin, ymin, xmax, ymax" />
+    <Label fx:id="lblOutput" layoutX="38.0" layoutY="160.0" text="Ausgabe" />
+    <Label fx:id="lblOutputStatus" layoutX="519.0" layoutY="160.0" onMouseExited="#onOutputExit" onMouseMoved="#onOutputHover" prefWidth="216.0" text="Pfad-Angabe" />
+    <Label fx:id="lblAequi" layoutX="38.0" layoutY="196.0" text="Äquidistanz" />
+    <Label fx:id="lblAequiStatus" layoutX="519.0" layoutY="196.0" onMouseExited="#onAequiExit" onMouseMoved="#onAequiHover" prefWidth="216.0" text="Format: Zahl (max 100 m)" />
+    <Label fx:id="lblSmoothOptions" layoutX="38.0" layoutY="228.0" text="Smooth-Optionen" />
+    <Label fx:id="lblThinning" layoutX="38.0" layoutY="257.0" text="Ausdünnen" />
+    <Label fx:id="lbl3D" layoutX="38.0" layoutY="288.0" text="3D-Visualisierung" />
+    <Label fx:id="lblLidar" layoutX="38.0" layoutY="319.0" text="Pfad LiDAR-Daten" />
+    <Label fx:id="lblLog" layoutX="38.0" layoutY="352.0" text="Pfad Logdatei" />
+    <Label fx:id="lblSmoothStatus" layoutX="519.0" layoutY="228.0" onMouseExited="#onSmoothExit" onMouseMoved="#onSmoothHover" prefWidth="216.0" text="Auswahl" />
+    <Label fx:id="lblThinningStatus" layoutX="519.0" layoutY="257.0" onMouseExited="#onThinningExit" onMouseMoved="#onThinningHover" prefWidth="230.0" text="Format: Zahl (0 heisst keine Ausdünnung)" />
+    <Label fx:id="lbl3DStatus" layoutX="519.0" layoutY="288.0" onMouseExited="#on3DExit" onMouseMoved="#on3DHover" prefWidth="216.0" text="Ja oder Nein" />
+    <Label fx:id="lblLidarStatus" layoutX="519.0" layoutY="319.0" onMouseExited="#onLidarExit" onMouseMoved="#onLidarHover" prefWidth="216.0" text="LiDAR-Pfadangabe" />
+    <Label fx:id="lblLogStatus" layoutX="519.0" layoutY="352.0" onMouseExited="#onLogExit" onMouseMoved="#onLogHover" prefWidth="216.0" text="Logdatei-Pfadangabe" />
+    <Button fx:id="btnNext" layoutX="390.0" layoutY="401.0" mnemonicParsing="false" onMouseClicked="#onNextWindow" text="Nächstes Fenster" />
     <Label fx:id="mainTitle" layoutX="38.0" layoutY="27.0" text="mainTitle">
       <font>
         <Font name="System Bold" size="18.0" />
       </font>
     </Label>
-    <Label fx:id="subTitle" layoutX="52.0" layoutY="50.0" text="subTitle">
+    <Label fx:id="subTitle" layoutX="38.0" layoutY="50.0" text="subTitle">
       <font>
         <Font size="16.0" />
       </font>
     </Label>
-    <TextField fx:id="txtInput" layoutX="190.0" layoutY="126.0" prefWidth="311.0000999999975" />
-    <TextField fx:id="txtOutput" layoutX="190.0" layoutY="162.0" prefWidth="230.0" />
-    <TextField fx:id="txtAequi" layoutX="190.0" layoutY="195.0" prefWidth="311.0" />
-    <TextField fx:id="txtThinning" layoutX="190.0" layoutY="256.0" prefWidth="311.0" />
-    <Button fx:id="btnOutput" layoutX="427.0" layoutY="163.0" mnemonicParsing="false" onMouseClicked="#onOutputChoose" prefWidth="74.0" text="Auswahl" />
-    <ComboBox fx:id="cbSmooth" layoutX="190.0" layoutY="226.0" onInputMethodTextChanged="#onSmoothChange" prefHeight="21.0" prefWidth="311.0">
+    <TextField fx:id="txtInput" layoutX="162.0" layoutY="124.0" prefWidth="338.0" />
+    <TextField fx:id="txtOutput" layoutX="162.0" layoutY="160.0" prefWidth="251.0" />
+    <TextField fx:id="txtAequi" layoutX="162.0" layoutY="193.0" prefWidth="338.0" />
+    <TextField fx:id="txtThinning" layoutX="162.0" layoutY="254.0" prefWidth="338.0" />
+    <Button fx:id="btnOutput" layoutX="426.0" layoutY="161.0" mnemonicParsing="false" onMouseClicked="#onOutputChoose" prefWidth="74.0" text="Auswahl" />
+    <ComboBox fx:id="cbSmooth" layoutX="162.0" layoutY="224.0" onInputMethodTextChanged="#onSmoothChange" prefHeight="21.0" prefWidth="338.0">
       <items>
         <FXCollections fx:factory="observableArrayList">
           <String fx:value="Item 1" />
@@ -54,12 +54,12 @@
         </FXCollections>
       </items>
     </ComboBox>
-    <CheckBox fx:id="ck3D" layoutX="190.0" layoutY="290.0" mnemonicParsing="false" text="Wollen Sie eine 3D-Visualisierung?" />
-    <TextField fx:id="txtLidar" layoutX="187.0" layoutY="321.0" prefWidth="230.0" />
-    <TextField fx:id="txtLog" layoutX="187.0" layoutY="354.0" prefWidth="230.00009999999747" />
-    <Button fx:id="btnLidar" layoutX="427.0" layoutY="321.0" mnemonicParsing="false" onMouseClicked="#onLidarChoose" prefWidth="74.0" text="Auswahl" />
-    <Button fx:id="btnLog" layoutX="427.0" layoutY="356.0" mnemonicParsing="false" onMouseClicked="#onLogChoose" prefWidth="74.0" text="Auswahl" />
-    <Button fx:id="btnCancel" layoutX="66.0" layoutY="403.0" mnemonicParsing="false" onMouseClicked="#onCancel" text="Abbrechen" />
-    <Label fx:id="lblStatus" alignment="CENTER_RIGHT" layoutX="126.0" layoutY="30.0" prefWidth="559.0" text="label" textAlignment="LEFT" textFill="RED" underline="false" wrapText="false" />
+    <CheckBox fx:id="ck3D" layoutX="162.0" layoutY="288.0" mnemonicParsing="false" text="Wollen Sie eine 3D-Visualisierung?" />
+    <TextField fx:id="txtLidar" layoutX="159.0" layoutY="319.0" prefWidth="251.0" />
+    <TextField fx:id="txtLog" layoutX="159.0" layoutY="352.0" prefWidth="251.0" />
+    <Button fx:id="btnLidar" layoutX="426.0" layoutY="319.0" mnemonicParsing="false" onMouseClicked="#onLidarChoose" prefWidth="74.0" text="Auswahl" />
+    <Button fx:id="btnLog" layoutX="426.0" layoutY="354.0" mnemonicParsing="false" onMouseClicked="#onLogChoose" prefWidth="74.0" text="Auswahl" />
+    <Button fx:id="btnCancel" layoutX="38.0" layoutY="401.0" mnemonicParsing="false" onMouseClicked="#onCancel" text="Abbrechen" />
+    <Label fx:id="lblStatus" alignment="CENTER_RIGHT" layoutX="135.0" layoutY="27.0" prefWidth="338.0" text="label" textAlignment="LEFT" textFill="RED" underline="false" wrapText="false" />
   </children>
 </AnchorPane>

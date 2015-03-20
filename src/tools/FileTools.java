@@ -74,4 +74,28 @@ public class FileTools {
             //Log error
         }
     }
+    
+    public boolean deleteExistingFile(String filepath) {
+        File file = new File(filepath);
+        
+        if(file.exists()) {
+            if(file.delete()) {
+                return true;
+            }
+        } else {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public boolean doesFileExists(String filepath) {
+        File file = new File(filepath);
+        
+        if(file.exists()) {
+            return true;
+        }
+        
+        return false;
+    }
 }

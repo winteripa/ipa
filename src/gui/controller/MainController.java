@@ -101,6 +101,7 @@ public class MainController {
     public void addHoehenlinienConfig(GuiEnum currWindow, IMODEL model){
         if(currWindow.equals(GuiEnum.INPUT)) {
             hConfig.setInputModel((InputModel) model);
+            initializeLogger((InputModel) model);
         } else if (currWindow.equals(GuiEnum.PATH)) {
             hConfig.setPathModel((PathModel) model);
         }
@@ -141,5 +142,14 @@ public class MainController {
         lbl.getTooltip().show(lbl,
             p.getX() + lbl.getScene().getX() + lbl.getScene().getWindow().getX(),
             p.getY() + lbl.getScene().getY() + lbl.getScene().getWindow().getY() + 20);
+    }
+    
+    private void initializeLogger(InputModel model) {
+        ((StandaloneLogger) logger).setOrderNumber(model.getOrderNumber());
+        ((StandaloneLogger) logger).setLogPath(model.getLogdir().getAbsolutePath() + "\\");
+    }
+    
+    public void setLoggerStatusGui(StatusController statusGui) {
+        ((StandaloneLogger) logger).setStatusGui(statusGui);
     }
 }

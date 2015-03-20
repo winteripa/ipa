@@ -8,6 +8,7 @@ package gui.controller;
 
 import base.DisplayMethods;
 import bl.HoehenlinienManagement;
+import bo.GuiEnum;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
@@ -19,6 +20,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import tools.StandaloneLogger;
 
 /**
  * Controller-Klasse für das StatusGUI
@@ -56,6 +58,8 @@ public class StatusController implements Initializable {
     private MainController mainController;
     private HoehenlinienManagement hm;
     private DisplayMethods logger;
+    @FXML
+    private Button btnBack;
     
     /**
      * Initialisierungsmethode des Controllers
@@ -68,6 +72,7 @@ public class StatusController implements Initializable {
         mainController = MainController.getMainController(null);
         
         logger = mainController.getStandaloneLogger();
+        ((StandaloneLogger) logger).setStatusGui(this);
         
         hm = new HoehenlinienManagement(mainController.getHoehenlinienConfig(), this, logger);
         
@@ -101,6 +106,7 @@ public class StatusController implements Initializable {
      */
     @FXML
     private void onOrder(MouseEvent event) {
+        this.setProgress(-1);
         Thread th = new Thread(hm);
         th.start();
     }
@@ -143,5 +149,14 @@ public class StatusController implements Initializable {
      */
     public Button getBtnOrder() {
         return btnOrder;
+    }
+
+    public void setProgress(double progress) {
+        this.pbAppProgress.setProgress(progress);
+    }
+    
+    @FXML
+    private void onBack(MouseEvent event) {
+        mainController.showWindow(GuiEnum.PATH);
     }
 }

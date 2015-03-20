@@ -107,6 +107,8 @@ public class PathController implements Initializable {
     private String xmlpath;
     private ObservableList<Configuration> xmlConfigs;
     private boolean newConfig;
+    @FXML
+    private Button btnBack;
     
     /**
      * Initialisierungsmethode des PathControllers. Das Konfigurations-XML wird 
@@ -184,6 +186,17 @@ public class PathController implements Initializable {
             pathModel.setPythonpath(new File(txtPython.getText()));
             
             mainController.addHoehenlinienConfig(GuiEnum.PATH, pathModel);
+            
+            mainController.getStandaloneLogger().writeLog("Konfigurationspfad: ");
+            mainController.getStandaloneLogger().writeLog("-------------------------");
+            mainController.getStandaloneLogger().writeLog("");
+            mainController.getStandaloneLogger().writeLog("Konfigurationsname: " 
+                    + txtConfigName.getText());
+            mainController.getStandaloneLogger().writeLog("GDAL-Pfad: " + txtGdal.getText());
+            mainController.getStandaloneLogger().writeLog("GRASS-Pfad: " + txtGrass.getText());
+            mainController.getStandaloneLogger().writeLog("GRASS-BIN-Pfad: " + txtGrassBin.getText());
+            mainController.getStandaloneLogger().writeLog("Python-Pfad: " + txtPython.getText());
+            mainController.getStandaloneLogger().writeLog("");
             
             mainController.showWindow(GuiEnum.STATUS);
         }
@@ -634,5 +647,10 @@ public class PathController implements Initializable {
     @FXML
     private void onGrassBinExit(MouseEvent event) {
         lblGrassBinStatus.getTooltip().hide();
+    }
+
+    @FXML
+    private void onBack(MouseEvent event) {
+        mainController.showWindow(GuiEnum.INPUT);
     }
 }

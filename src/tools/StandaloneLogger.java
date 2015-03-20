@@ -7,6 +7,7 @@
 package tools;
 
 import base.DisplayMethods;
+import gui.controller.StatusController;
 
 /**
  *
@@ -19,6 +20,7 @@ public class StandaloneLogger implements DisplayMethods {
     private String timestamp = null;
     private Integer orderNumber = null;
     private String logPath = null;
+    private StatusController statusGui = null;
     
     public StandaloneLogger() {
         fileTool = new FileTools();
@@ -27,8 +29,9 @@ public class StandaloneLogger implements DisplayMethods {
     }
     
     @Override
-    public void writeText(String string) {
-        System.out.println(string);
+    public void writeText(String text) {
+        this.writeLog(text);
+        System.out.println(text);
     }
 
     @Override
@@ -44,17 +47,22 @@ public class StandaloneLogger implements DisplayMethods {
 
     @Override
     public void closeText() {
+        this.writeLog("Logfile Ende");
         System.out.println("Logile Ende");
     }
 
     @Override
-    public void writeStatus(String string) {
-        System.out.println(string);
+    public void writeStatus(String status) {
+        this.statusGui.getTxtStatus().appendText("Status: " + status + "\n");
+        
+        System.out.println("Status: " + status);
     }
 
     @Override
-    public void writeErrorStatus(String string) {
-        System.err.println(string);
+    public void writeErrorStatus(String errStatus) {
+        this.statusGui.getTxtStatus().appendText("Error: " + errStatus + "\n");
+        
+        System.out.println("Error: " + errStatus);
     }
 
     public void setOrderNumber(int orderNumber) {
@@ -63,5 +71,9 @@ public class StandaloneLogger implements DisplayMethods {
 
     public void setLogPath(String logPath) {
         this.logPath = logPath;
+    }
+
+    public void setStatusGui(StatusController statusGui) {
+        this.statusGui = statusGui;
     }
 }

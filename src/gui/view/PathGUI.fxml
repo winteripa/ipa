@@ -8,26 +8,26 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="479.0" prefWidth="762.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.controller.PathController">
+<AnchorPane id="AnchorPane" prefHeight="479.0" prefWidth="581.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.controller.PathController">
   <children>
-    <Button fx:id="btnNext" layoutX="424.0" layoutY="417.0" mnemonicParsing="false" onMouseClicked="#onNextWindow" text="Nächstes Fenster" />
+    <Button fx:id="btnNext" layoutX="396.0" layoutY="417.0" mnemonicParsing="false" onMouseClicked="#onNextWindow" text="Nächstes Fenster" />
     <Label fx:id="mainTitle" layoutX="26.0" layoutY="41.0" text="mainTitle">
       <font>
         <Font name="System Bold" size="18.0" />
       </font>
     </Label>
-    <Label fx:id="subTitle" layoutX="40.0" layoutY="64.0" text="subTitle">
+    <Label fx:id="subTitle" layoutX="26.0" layoutY="64.0" text="subTitle">
       <font>
         <Font size="16.0" />
       </font>
     </Label>
-    <Button fx:id="btnCancel" layoutX="54.0" layoutY="417.0" mnemonicParsing="false" onMouseClicked="#onCancel" text="Abbrechen" />
-    <Label fx:id="lblStatus" alignment="CENTER_RIGHT" layoutX="114.0" layoutY="44.0" prefWidth="559.0" text="label" textAlignment="LEFT" textFill="RED" underline="false" wrapText="false" />
-    <Label fx:id="lblConfig" layoutX="54.0" layoutY="91.0" text="Konfiguration" />
-    <Label fx:id="lblConfigName" layoutX="54.0" layoutY="127.0" text="Konfigurations-Name" />
-    <Label fx:id="lblPython" layoutX="54.0" layoutY="165.0" text="Python-Pfad" />
-    <Label fx:id="lblGdal" layoutX="54.0" layoutY="199.0" text="GDAL-Pfad" />
-    <ComboBox fx:id="cbConfig" layoutX="182.0" layoutY="92.0" onAction="#onConfigChanged" prefHeight="21.0" prefWidth="270.0">
+    <Button fx:id="btnCancel" layoutX="26.0" layoutY="417.0" mnemonicParsing="false" onMouseClicked="#onCancel" text="Abbrechen" />
+    <Label fx:id="lblStatus" alignment="CENTER_RIGHT" layoutX="189.0" layoutY="45.0" prefWidth="317.0" text="label" textAlignment="LEFT" textFill="RED" underline="false" wrapText="false" />
+    <Label fx:id="lblConfig" layoutX="26.0" layoutY="91.0" text="Konfiguration" />
+    <Label fx:id="lblConfigName" layoutX="26.0" layoutY="127.0" text="Konfigurations-Name" />
+    <Label fx:id="lblPython" layoutX="26.0" layoutY="165.0" text="Python-Pfad" />
+    <Label fx:id="lblGdal" layoutX="26.0" layoutY="199.0" text="GDAL-Pfad" />
+    <ComboBox fx:id="cbConfig" layoutX="154.0" layoutY="92.0" onAction="#onConfigChanged" prefHeight="21.0" prefWidth="270.0">
       <items>
         <FXCollections fx:factory="observableArrayList">
           <String fx:value="Item 1" />
@@ -36,23 +36,24 @@
         </FXCollections>
       </items>
     </ComboBox>
-    <Button fx:id="btnConfigNew" layoutX="456.0" layoutY="92.0" mnemonicParsing="false" onMouseClicked="#onConfigNew" prefWidth="78.0" text="Neu" />
-    <TextField fx:id="txtConfigName" layoutX="182.0" layoutY="124.0" prefWidth="352.0" />
-    <TextField fx:id="txtPython" layoutX="182.0" layoutY="162.0" prefWidth="270.0" />
-    <TextField fx:id="txtGdal" layoutX="182.0" layoutY="196.0" prefWidth="270.0" />
-    <Label fx:id="lblConfigStatus" layoutX="550.0" layoutY="94.0" onMouseExited="#onConfigExit" onMouseMoved="#onConfigHover" prefWidth="179.0" text="Auswahl oder neue Konfiguration" />
-    <Label fx:id="lblConfigNameStatus" layoutX="550.0" layoutY="127.0" onMouseExited="#onConfigNameExit" onMouseMoved="#onConfigNameHover" prefWidth="179.0" text="Eindeutiger Konfigurationsname" />
-    <Label fx:id="lblPythonStatus" layoutX="550.0" layoutY="165.0" onMouseExited="#onPythonExit" onMouseMoved="#onPythonHover" prefWidth="165.0" text="Python-Pfadangabe" />
-    <Label fx:id="lblGdalStatus" layoutX="550.0" layoutY="199.0" onMouseExited="#onGdalExit" onMouseMoved="#onGdalHover" prefWidth="179.0" text="GDAL-Pfadangabe" />
-    <Label fx:id="lblGrass" layoutX="54.0" layoutY="232.0" text="GRASS-Pfad" />
-    <TextField fx:id="txtGrass" layoutX="182.0" layoutY="229.0" prefWidth="270.0" />
-    <Label fx:id="lblGrassStatus" layoutX="550.0" layoutY="232.0" onMouseExited="#onGrassExit" onMouseMoved="#onGrassHover" prefWidth="179.0" text="GRASS-Pfadangabe" />
-    <Label fx:id="lblGrassBin" layoutX="54.0" layoutY="263.0" text="GRASS-BIN" />
-    <TextField fx:id="txtGrassBin" layoutX="182.0" layoutY="260.0" prefWidth="270.0" />
-    <Label fx:id="lblGrassBinStatus" layoutX="550.0" layoutY="263.0" onMouseExited="#onGrassBinExit" onMouseMoved="#onGrassBinHover" prefWidth="179.0" text="GRASS-BIN-Pfadangabe" />
-    <Button fx:id="btnPython" layoutX="456.0" layoutY="162.0" mnemonicParsing="false" onMouseClicked="#onPythonChoose" prefWidth="78.0" text="Auswahl" />
-    <Button fx:id="btnGdal" layoutX="456.0" layoutY="197.0" mnemonicParsing="false" onMouseClicked="#onGdalChoose" prefWidth="78.0" text="Auswahl" />
-    <Button fx:id="btnGrass" layoutX="456.0" layoutY="230.0" mnemonicParsing="false" onMouseClicked="#onGrassChoose" prefWidth="78.0" text="Auswahl" />
-    <Button fx:id="btnGrassBin" layoutX="456.0" layoutY="261.0" mnemonicParsing="false" onMouseClicked="#onGrassBinChoose" prefWidth="78.0" text="Auswahl" />
+    <Button fx:id="btnConfigNew" layoutX="428.0" layoutY="92.0" mnemonicParsing="false" onMouseClicked="#onConfigNew" prefWidth="78.0" text="Neu" />
+    <TextField fx:id="txtConfigName" layoutX="154.0" layoutY="124.0" prefWidth="352.0" />
+    <TextField fx:id="txtPython" layoutX="154.0" layoutY="162.0" prefWidth="270.0" />
+    <TextField fx:id="txtGdal" layoutX="154.0" layoutY="196.0" prefWidth="270.0" />
+    <Label fx:id="lblConfigStatus" layoutX="522.0" layoutY="94.0" onMouseExited="#onConfigExit" onMouseMoved="#onConfigHover" prefWidth="179.0" text="Auswahl oder neue Konfiguration" />
+    <Label fx:id="lblConfigNameStatus" layoutX="522.0" layoutY="127.0" onMouseExited="#onConfigNameExit" onMouseMoved="#onConfigNameHover" prefWidth="179.0" text="Eindeutiger Konfigurationsname" />
+    <Label fx:id="lblPythonStatus" layoutX="522.0" layoutY="165.0" onMouseExited="#onPythonExit" onMouseMoved="#onPythonHover" prefWidth="165.0" text="Python-Pfadangabe" />
+    <Label fx:id="lblGdalStatus" layoutX="522.0" layoutY="199.0" onMouseExited="#onGdalExit" onMouseMoved="#onGdalHover" prefWidth="179.0" text="GDAL-Pfadangabe" />
+    <Label fx:id="lblGrass" layoutX="26.0" layoutY="232.0" text="GRASS-Pfad" />
+    <TextField fx:id="txtGrass" layoutX="154.0" layoutY="229.0" prefWidth="270.0" />
+    <Label fx:id="lblGrassStatus" layoutX="522.0" layoutY="232.0" onMouseExited="#onGrassExit" onMouseMoved="#onGrassHover" prefWidth="179.0" text="GRASS-Pfadangabe" />
+    <Label fx:id="lblGrassBin" layoutX="26.0" layoutY="263.0" text="GRASS-BIN" />
+    <TextField fx:id="txtGrassBin" layoutX="154.0" layoutY="260.0" prefWidth="270.0" />
+    <Label fx:id="lblGrassBinStatus" layoutX="522.0" layoutY="263.0" onMouseExited="#onGrassBinExit" onMouseMoved="#onGrassBinHover" prefWidth="179.0" text="GRASS-BIN-Pfadangabe" />
+    <Button fx:id="btnPython" layoutX="428.0" layoutY="162.0" mnemonicParsing="false" onMouseClicked="#onPythonChoose" prefWidth="78.0" text="Auswahl" />
+    <Button fx:id="btnGdal" layoutX="428.0" layoutY="197.0" mnemonicParsing="false" onMouseClicked="#onGdalChoose" prefWidth="78.0" text="Auswahl" />
+    <Button fx:id="btnGrass" layoutX="428.0" layoutY="230.0" mnemonicParsing="false" onMouseClicked="#onGrassChoose" prefWidth="78.0" text="Auswahl" />
+    <Button fx:id="btnGrassBin" layoutX="428.0" layoutY="261.0" mnemonicParsing="false" onMouseClicked="#onGrassBinChoose" prefWidth="78.0" text="Auswahl" />
+    <Button fx:id="btnBack" layoutX="235.0" layoutY="417.0" mnemonicParsing="false" onMouseClicked="#onBack" text="Zurück" />
   </children>
 </AnchorPane>
