@@ -8,6 +8,7 @@ package gui.controller;
 
 import bo.GuiEnum;
 import bo.InputModel;
+import bo.LogPrefix;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -191,28 +192,44 @@ public class InputController implements Initializable {
             mainController.addHoehenlinienConfig(GuiEnum.INPUT, inputModel);
             
             //Log Block darf erst Nach dem Methodenaufruf geschehen: mainController.addHoehenlinienConfig(GuiEnum.INPUT, inputModel);
-            mainController.getStandaloneLogger().writeLog("Beginn Logfile");
-            mainController.getStandaloneLogger().writeLog("-------------------------");
-            mainController.getStandaloneLogger().writeLog("");
-            mainController.getStandaloneLogger().writeLog("Steuerungsparameter: ");
-            mainController.getStandaloneLogger().writeLog("-------------------------");
-            mainController.getStandaloneLogger().writeLog("");
-            mainController.getStandaloneLogger().writeLog("Äquidistanz: " + txtAequi.getText());
-            mainController.getStandaloneLogger().writeLog("Koordinatneausschnitt: " 
+            //mainController.getStandaloneLogger().writeLog("Beginn Logfile");
+            //mainController.getStandaloneLogger().writeLog("-------------------------");
+            //mainController.getStandaloneLogger().writeLog("");
+            //mainController.getStandaloneLogger().writeLog("Steuerungsparameter: ");
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUTTITLE + "Steuerungsparameter");
+            //mainController.getStandaloneLogger().writeLog("-------------------------");
+            //mainController.getStandaloneLogger().writeLog("");
+            //mainController.getStandaloneLogger().writeLog("Äquidistanz: " + txtAequi.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "Äquidistanz;" + txtAequi.getText());
+//            mainController.getStandaloneLogger().writeLog("Koordinatneausschnitt: " 
+//                    + txtInput.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "Koordinatneausschnitt;" 
                     + txtInput.getText());
-            mainController.getStandaloneLogger().writeLog("Bestellnummer: " 
+//            mainController.getStandaloneLogger().writeLog("Bestellnummer: " 
+//                    + txtOrdercode.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "Bestellnummer;" 
                     + txtOrdercode.getText());
-            mainController.getStandaloneLogger().writeLog("Output-Pfad: " + txtOutput.getText());
-            mainController.getStandaloneLogger().writeLog("LiDAR-Datenpfad: " 
+            //mainController.getStandaloneLogger().writeLog("Output-Pfad: " + txtOutput.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "Output-Pfad;" + txtOutput.getText());
+//            mainController.getStandaloneLogger().writeLog("LiDAR-Datenpfad: " 
+//                    + txtLidar.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "LiDAR-Datenpfad;" 
                     + txtLidar.getText());
-            mainController.getStandaloneLogger().writeLog("Smooth-Alogrithmus: " 
+//            mainController.getStandaloneLogger().writeLog("Smooth-Alogrithmus: " 
+//                    + cbSmooth.getValue());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "Smooth-Alogrithmus;" 
                     + cbSmooth.getValue());
-            mainController.getStandaloneLogger().writeLog("Ausdünnung: " + txtThinning.getText());
-            mainController.getStandaloneLogger().writeLog("3D-Visualisierung: " 
+//            mainController.getStandaloneLogger().writeLog("Ausdünnung: " + txtThinning.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "Ausdünnung;" + txtThinning.getText());
+//            mainController.getStandaloneLogger().writeLog("3D-Visualisierung: " 
+//                    + ck3D.isSelected());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "3D-Visualisierung;" 
                     + ck3D.isSelected());
-            mainController.getStandaloneLogger().writeLog("Logfile-Pfad: " 
+//            mainController.getStandaloneLogger().writeLog("Logfile-Pfad: " 
+//                    + txtLog.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "Logfile-Pfad;" 
                     + txtLog.getText());
-            mainController.getStandaloneLogger().writeLog("");
+            //mainController.getStandaloneLogger().writeLog("");
             
             mainController.showWindow(GuiEnum.PATH);
         }

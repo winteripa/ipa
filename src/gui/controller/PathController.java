@@ -8,6 +8,7 @@ package gui.controller;
 
 import bo.Configuration;
 import bo.GuiEnum;
+import bo.LogPrefix;
 import bo.PathModel;
 import java.io.File;
 import java.net.URL;
@@ -187,16 +188,23 @@ public class PathController implements Initializable {
             
             mainController.addHoehenlinienConfig(GuiEnum.PATH, pathModel);
             
-            mainController.getStandaloneLogger().writeLog("Konfigurationspfad: ");
-            mainController.getStandaloneLogger().writeLog("-------------------------");
-            mainController.getStandaloneLogger().writeLog("");
-            mainController.getStandaloneLogger().writeLog("Konfigurationsname: " 
+            //mainController.getStandaloneLogger().writeLog("Konfigurationspfad: ");
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUTTITLE + "Konfigurationspfad");
+            //mainController.getStandaloneLogger().writeLog("-------------------------");
+            //mainController.getStandaloneLogger().writeLog("");
+//            mainController.getStandaloneLogger().writeLog("Konfigurationsname: " 
+//                    + txtConfigName.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "Konfigurationsname;" 
                     + txtConfigName.getText());
-            mainController.getStandaloneLogger().writeLog("GDAL-Pfad: " + txtGdal.getText());
-            mainController.getStandaloneLogger().writeLog("GRASS-Pfad: " + txtGrass.getText());
-            mainController.getStandaloneLogger().writeLog("GRASS-BIN-Pfad: " + txtGrassBin.getText());
-            mainController.getStandaloneLogger().writeLog("Python-Pfad: " + txtPython.getText());
-            mainController.getStandaloneLogger().writeLog("");
+//            mainController.getStandaloneLogger().writeLog("GDAL-Pfad: " + txtGdal.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "GDAL-Pfad;" + txtGdal.getText());
+//            mainController.getStandaloneLogger().writeLog("GRASS-Pfad: " + txtGrass.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "GRASS-Pfad;" + txtGrass.getText());
+//            mainController.getStandaloneLogger().writeLog("GRASS-BIN-Pfad: " + txtGrassBin.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "GRASS-BIN-Pfad;" + txtGrassBin.getText());
+//            mainController.getStandaloneLogger().writeLog("Python-Pfad: " + txtPython.getText());
+            mainController.getStandaloneLogger().writeLog(LogPrefix.LOGUSERINPUT + "Python-Pfad;" + txtPython.getText());
+            //mainController.getStandaloneLogger().writeLog("");
             
             mainController.showWindow(GuiEnum.STATUS);
         }

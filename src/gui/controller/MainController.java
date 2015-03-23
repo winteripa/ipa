@@ -11,6 +11,7 @@ import bo.GuiEnum;
 import bo.HoehenlinienConfig;
 import bo.IMODEL;
 import bo.InputModel;
+import bo.LogPrefix;
 import bo.PathModel;
 import java.io.IOException;
 import javafx.fxml.FXMLLoader;
@@ -147,6 +148,7 @@ public class MainController {
     private void initializeLogger(InputModel model) {
         ((StandaloneLogger) logger).setOrderNumber(model.getOrderNumber());
         ((StandaloneLogger) logger).setLogPath(model.getLogdir().getAbsolutePath() + "\\");
+        logger.writeLog(LogPrefix.LOGSTART);
     }
     
     public void setLoggerStatusGui(StatusController statusGui) {

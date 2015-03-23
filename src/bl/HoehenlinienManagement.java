@@ -9,6 +9,7 @@ package bl;
 import base.DisplayMethods;
 import bo.DBFactory;
 import bo.HoehenlinienConfig;
+import bo.LogPrefix;
 import dal.IDAL;
 import gui.controller.StatusController;
 import java.util.ArrayList;
@@ -61,9 +62,10 @@ public class HoehenlinienManagement implements Runnable {
         
         dbdal = this.factory.getDAL(this.logger);
         
-        this.logger.writeLog("Bestellvorgang ist gestartet worden.");
-        this.logger.writeLog("");
-        
+//        this.logger.writeLog("Bestellvorgang ist gestartet worden.");  
+//        this.logger.writeLog("");
+//        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Bestellvorgang ist gestartet worden.");
         this.logger.writeStatus("Start des Bestellvorgangs");
         
         convertInputRectangleToWKT();
@@ -74,10 +76,12 @@ public class HoehenlinienManagement implements Runnable {
             }
 
             if(moduleStarter.startModuleStandalone(hConfig, arrKachelnr, logger)) {
-                this.logger.writeLog("Bestellvorgang erfolgreich abgeschlossen");
+                //this.logger.writeLog("Bestellvorgang erfolgreich abgeschlossen");
+                this.logger.writeLog(LogPrefix.LOGINFO + "Bestellvorgang erfolgreich abgeschlossen");
                 this.logger.writeStatus("Bestellvorgang erfolgreich");
             } else {
-                this.logger.writeLog("Bestellvorgang nicht erfolgreich abgeschlossen");
+                //this.logger.writeLog("Bestellvorgang nicht erfolgreich abgeschlossen");
+                this.logger.writeLog(LogPrefix.LOGERROR + "Bestellvorgang nicht erfolgreich abgeschlossen");
                 this.logger.writeErrorStatus("Bestellvorgang nicht erfolgreich");
                 
                 this.statusGui.getLblStatus().setText("Fehler beim Bestellen. Bitte Logfile kontrollieren.");
@@ -106,17 +110,21 @@ public class HoehenlinienManagement implements Runnable {
      * Methode zur Umwandlung des Eingabe-Rechtecks in die WKT-Schreibweise
      */
     private void convertInputRectangleToWKT() {
-        this.logger.writeLog("Der Eingabe-Ausschnitt wird die WKT-Schreibweise "
-                + "umgewandelt.");
-        this.logger.writeLog("-------------------------");
-        this.logger.writeLog("");
+//        this.logger.writeLog("Der Eingabe-Ausschnitt wird die WKT-Schreibweise "
+//                + "umgewandelt.");
+//        this.logger.writeLog("-------------------------");
+//        this.logger.writeLog("");
+        this.logger.writeLog(LogPrefix.LOGUSERINPUTTITLE + "Der Eingabe-Ausschnitt wird die WKT-Schreibweise "
+               + "umgewandelt.");
         
         String inputRectangle = this.hConfig.getInputModel().getCoordRectangle();
         
         wktRectangle = formatTool.inputRectangleToWKT(inputRectangle);
         
-        this.logger.writeLog("WKT-Polygon: " + wktRectangle);
-        this.logger.writeLog("");
+//        this.logger.writeLog("WKT-Polygon: " + wktRectangle);
+//        this.logger.writeLog("");
+        
+        this.logger.writeLog(LogPrefix.LOGUSERINPUT + "WKT-Polygon;" + wktRectangle);
     }
     
     /**

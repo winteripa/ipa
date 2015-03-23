@@ -22,4 +22,18 @@ public class TimeTools {
         
         return df.format(cal.getTime());
     }
+    
+    public String getCurrDate() {
+        DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+        Calendar cal = Calendar.getInstance();
+        
+        return df.format(cal.getTime());
+    }
+    
+    public String getCurrTime() {
+        DateFormat df = new SimpleDateFormat("HH-mm-ss");
+        Calendar cal = Calendar.getInstance();
+        
+        return df.format(cal.getTime());
+    }
 }

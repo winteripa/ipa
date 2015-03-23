@@ -7,6 +7,7 @@
 package tools;
 
 import base.DisplayMethods;
+import bo.LogPrefix;
 import gui.controller.StatusController;
 
 /**
@@ -21,11 +22,13 @@ public class StandaloneLogger implements DisplayMethods {
     private Integer orderNumber = null;
     private String logPath = null;
     private StatusController statusGui = null;
+    private String logPrefix = null;
     
     public StandaloneLogger() {
         fileTool = new FileTools();
         timeTool = new TimeTools();
         timestamp = timeTool.getCurrDatetime();
+        logPrefix = timeTool.getCurrDate() + ";" + timeTool.getCurrTime();
     }
     
     @Override
@@ -38,7 +41,7 @@ public class StandaloneLogger implements DisplayMethods {
     public void writeLog(String logMessage) {
         if(orderNumber != null && logPath != null) {
             String logfilename = logPath + "\\" + orderNumber + "_logfile_" + timestamp + ".log";
-            fileTool.writeLogfile(logfilename, logMessage);
+            fileTool.writeLogfile(logfilename, logPrefix + ";" + logMessage);
         } else {
             this.writeStatus(logMessage);
         }
@@ -47,7 +50,8 @@ public class StandaloneLogger implements DisplayMethods {
 
     @Override
     public void closeText() {
-        this.writeLog("Logfile Ende");
+        //this.writeLog("Logfile Ende");
+        this.writeLog(LogPrefix.LOGEND);
         System.out.println("Logile Ende");
     }
 
