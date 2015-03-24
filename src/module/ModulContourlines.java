@@ -122,6 +122,10 @@ public class ModulContourlines {
         return true;
     }
     
+    /**
+     * Methode zum Erstellen der Höhenlinien aus dem ASC-Auschnitt
+     * @return Erstellungsstatus
+     */
     private boolean makeContourlines() {
         try {
             String flag3D = "";
@@ -205,6 +209,10 @@ public class ModulContourlines {
         return false;
     }
     
+    /**
+     * Methode zum Ausdünnen der Punkte des ASC-Ausschnittes
+     * @return Erstellungsstatus
+     */
     private boolean makeThinning() {
         int thinningVal = hConfig.getInputModel().getThinning();
         if(thinningVal != 0) {
@@ -590,6 +598,12 @@ public class ModulContourlines {
         return true;
     }
     
+    /**
+     * Methode zum Prüfen ob das Resultat auf der Festplatte existiert
+     * @param filepath Pfad zur Datei
+     * @param errMsg Fehlermeldung
+     * @return Existenzstatus
+     */
     private boolean doesResultExits(String filepath, String errMsg) {
         if(!this.fileTool.doesFileExists(filepath)) {
 //            this.logger.writeLog(errMsg);

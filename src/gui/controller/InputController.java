@@ -404,109 +404,164 @@ public class InputController implements Initializable {
         lblThinningStatus.setTextFill(Color.web("#000000"));*/
         lblStatus.setVisible(false);
     }
-    
-    private void addPic(Label lbl) {
-        lbl.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/img/interrogation.png"))));
-    }
-    
-    private void setTooltip(Label lbl, String text) {
-        Tooltip t = new Tooltip();
-        t.setText(text);
-        lbl.setTooltip(t);
-    }
-    
-    private void showTooltipOnPosition(Label lbl) {
-        Point2D p = lbl.localToScene(0.0, 0.0);
-        lbl.getTooltip().show(lbl,
-        p.getX() + lbl.getScene().getX() + lbl.getScene().getWindow().getX(),
-        p.getY() + lbl.getScene().getY() + lbl.getScene().getWindow().getY() + 10);
-    }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den Bestellnummer-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onOrderCodeHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblOrderCodeStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den Bestellnummer-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onOrderCodeExit(MouseEvent event) {
         lblOrderCodeStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den Eingabe-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onInputHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblInputStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den Eingabe-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onInputExit(MouseEvent event) {
         lblInputStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den Ausgabe-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onOutputHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblOutputStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den Ausgabe-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onOutputExit(MouseEvent event) {
         lblOutputStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den Äquidistanz-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onAequiHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblAequiStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den Äquidistanz-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onAequiExit(MouseEvent event) {
         lblAequiStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den Smooth-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onSmoothHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblSmoothStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den Smooth-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onSmoothExit(MouseEvent event) {
         lblSmoothStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den Ausdünnen-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onThinningHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblThinningStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den Ausdünnen-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onThinningExit(MouseEvent event) {
         lblThinningStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den 3D-Visualisierungs-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void on3DHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lbl3DStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den 3D-Visualisierungs-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void on3DExit(MouseEvent event) {
         lbl3DStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den LiDAR-Daten-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onLidarHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblLidarStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den LiDAR-Daten-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onLidarExit(MouseEvent event) {
         lblLidarStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den Logfile-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onLogHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblLogStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den Logfile-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onLogExit(MouseEvent event) {
         lblLogStatus.getTooltip().hide();

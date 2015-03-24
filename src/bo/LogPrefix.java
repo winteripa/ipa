@@ -7,7 +7,7 @@
 package bo;
 
 /**
- *
+ * Klasse für die Rückgabe von Präfixen für einen Eintrag in das Logfile
  * @author Jan Winter
  */
 public class LogPrefix {

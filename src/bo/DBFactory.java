@@ -11,11 +11,16 @@ import dal.DatabaseDAL;
 import dal.IDAL;
 
 /**
- *
+ * Factory-Klasse für die Rückgabe einer DAL-Klasse
  * @author u203011
  */
 public class DBFactory {
     
+    /**
+     * Methode um eine DAL-Klasse mit implementierten IDAL-Interface zu erhalten.
+     * @param logger Logger-Klasse des Projekts
+     * @return DAL-Klasse
+     */
     public IDAL getDAL(DisplayMethods logger) {
         return new DatabaseDAL(logger);
     }

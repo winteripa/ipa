@@ -597,66 +597,118 @@ public class PathController implements Initializable {
         }
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den Config-Auswahl-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onConfigHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblConfigStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den Config-Auswahl-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onConfigExit(MouseEvent event) {
         lblConfigStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den Config-Namen-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onConfigNameHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblConfigNameStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den Config-Namen-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onConfigNameExit(MouseEvent event) {
         lblConfigNameStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den Python-Pfad-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onPythonHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblPythonStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den Python-Pfad-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onPythonExit(MouseEvent event) {
         lblPythonStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den GDAL-Pfad-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onGdalHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblGdalStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den GDAL-Pfad-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onGdalExit(MouseEvent event) {
         lblGdalStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den GRASS-Pfad-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onGrassHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblGrassStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den GRASS-Pfad-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onGrassExit(MouseEvent event) {
         lblGrassStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Hilfs-Tooltips für den GRASS-BIN-Pfad-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onGrassBinHover(MouseEvent event) {
         mainController.showTooltipOnPosition(lblGrassBinStatus);
     }
 
+    /**
+     * Verstecken des Hilfs-Tooltips für den GRASS-BIN-Pfad-Infoknopf
+     * @param event Mouseover-Event
+     */
     @FXML
     private void onGrassBinExit(MouseEvent event) {
         lblGrassBinStatus.getTooltip().hide();
     }
 
+    /**
+     * Anzeige des Steuerparameter-Eingabefensters 
+     * @param event Click-Event
+     */
     @FXML
     private void onBack(MouseEvent event) {
         mainController.showWindow(GuiEnum.INPUT);

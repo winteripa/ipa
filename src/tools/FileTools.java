@@ -8,8 +8,12 @@ package tools;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -50,6 +54,11 @@ public class FileTools {
         return null;
     }
     
+    /**
+     * Methode zum Schreiben des Logfiles
+     * @param logfile Logfile-Pfad
+     * @param content Inhalt, der in das Logfile geschrieben wird
+     */
     public void writeLogfile(String logfile, String content) {
         if(!logfile.endsWith(".log")){
             logfile = logfile + ".log";
@@ -58,6 +67,12 @@ public class FileTools {
         this.writeFile(true, logfile, content);
     }
     
+    /**
+     * Methode zum Schreiben einer Datei 
+     * @param append Flag, ob der Text einer Datei hinzugefügt werden soll
+     * @param filepath Pfad zur Datei
+     * @param content Inhalt, der in die Datei geschrieben wird
+     */
     private void writeFile(boolean append, String filepath, String content) {
         try {
             File file = new File(filepath);
@@ -75,6 +90,11 @@ public class FileTools {
         }
     }
     
+    /**
+     * Methode für das Löschen einer Datei
+     * @param filepath Pfad zur Datei
+     * @return Löschstatus
+     */
     public boolean deleteExistingFile(String filepath) {
         File file = new File(filepath);
         
@@ -89,11 +109,50 @@ public class FileTools {
         return false;
     }
     
+    /**
+     * Methode zum Prüfen, ob eine Datei existiert
+     * @param filepath Pfad zur Datei
+     * @return Existenzstatus
+     */
     public boolean doesFileExists(String filepath) {
         File file = new File(filepath);
         
         if(file.exists()) {
             return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Methode zum Schreiben einer Datei innerhalb der Jar-Datei in ein bestimmtes Verzeichnis
+     * @param insideRes Dateiname für die Datei innerhalb des 'res'-Packages
+     * @param outputPath Ausgabe-Verzeichnis
+     * @return Erstellungsstatus
+     */
+    public boolean copyInsideFileToDisk(String insideRes, String outputPath) {
+        OutputStream resOutStream = null;
+        InputStream resInStream = null;
+        
+        String output = outputPath + insideRes;
+        try {
+            resInStream = FileTools.class.getResourceAsStream(insideRes);
+            resOutStream = new FileOutputStream(output);
+            
+            IOUtils.copy(resInStream, resOutStream);
+            
+            if(this.doesFileExists(output)) {
+                return true;
+            }
+        } catch (FileNotFoundException ex) {
+            //Log error
+        } finally {
+            try {
+                resInStream.close();
+                resOutStream.close();
+            } catch (IOException ex) {
+                //Log error
+            }
         }
         
         return false;

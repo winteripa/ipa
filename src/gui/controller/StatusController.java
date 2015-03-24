@@ -155,6 +155,10 @@ public class StatusController implements Initializable {
         this.pbAppProgress.setProgress(progress);
     }
     
+    /**
+     * Anzeige des Pfad-Konfiguration-Eingabefensters 
+     * @param event Click-Event
+     */
     @FXML
     private void onBack(MouseEvent event) {
         mainController.showWindow(GuiEnum.PATH);

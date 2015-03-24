@@ -124,20 +124,37 @@ public class MainController {
         return logger;
     }
     
+    /**
+     * Methode für das Hinzufügen eines Fragezeichen-Icons für ein Label
+     * @param lbl Label ohne Fragezeichen-Icon
+     */
     protected void addInterrogationPic(Label lbl) {
         lbl.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/img/interrogation.png"))));
     }
     
+    /**
+     * Methode für das Hinzufügen eines Ausrufezeichen-Icons für ein Label
+     * @param lbl Label ohne Ausrufezeichen-Icon
+     */
     protected void addExclamationPic(Label lbl) {
         lbl.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/img/attention.png"))));
     }
     
+    /**
+     * Methode, welche einem Label einen Tooltip mit wählbarem Text hinzufügt
+     * @param lbl Label ohne Tooltip
+     * @param text Tooltip-Text
+     */
     protected void setTooltip(Label lbl, String text) {
         Tooltip t = new Tooltip();
         t.setText(text);
         lbl.setTooltip(t);
     }
     
+    /**
+     * Methode um den Tooltip eines Label an der richtigen Position anzuzeigen
+     * @param lbl Label mit Tooltip
+     */
     protected void showTooltipOnPosition(Label lbl) {
         Point2D p = lbl.localToScene(0.0, 0.0);
         lbl.getTooltip().show(lbl,
@@ -145,12 +162,21 @@ public class MainController {
             p.getY() + lbl.getScene().getY() + lbl.getScene().getWindow().getY() + 20);
     }
     
+    /**
+     * Methode, welche dem Logger-Klassen-Objekt wichtige Daten übergibt
+     * @param model Model mit Steuerungsparameter
+     */
     private void initializeLogger(InputModel model) {
         ((StandaloneLogger) logger).setOrderNumber(model.getOrderNumber());
         ((StandaloneLogger) logger).setLogPath(model.getLogdir().getAbsolutePath() + "\\");
         logger.writeLog(LogPrefix.LOGSTART);
     }
     
+    /**
+     * Methode zum Setzen des Status-GUIs im Logger-Klassen-Objekt
+     * um Nachrichten darauf auszugeben
+     * @param statusGui Status-GUI
+     */
     public void setLoggerStatusGui(StatusController statusGui) {
         ((StandaloneLogger) logger).setStatusGui(statusGui);
     }
