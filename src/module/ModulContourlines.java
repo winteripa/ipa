@@ -12,8 +12,7 @@ import bo.LogPrefix;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.HashMap;
 import org.apache.tools.ant.DirectoryScanner;
 import tools.FileTools;
 
@@ -25,6 +24,12 @@ public class ModulContourlines {
     
     private static final double KACHEL_CELLSIZE = 0.5;
     private static final int KACHEL_COLS = 1000;
+    private static final String GRASSVECTORIMPORT = "vectorimport";
+    private static final String GRASSSMOOTH = "grasssmooth";
+    private static final String GRASSEXPORT = "grassexport";
+    private static final String GRASSVECTORPATH = "glocation\\grassmapset\\vector";
+    private static final String GRASSMAPSETDIR = "grassmapset";
+    private static final String CONTOURLINESSHPNAME = "contourlines";
     private boolean standalone;
     private HoehenlinienConfig hConfig = null;
     private DisplayMethods logger = null;
@@ -39,6 +44,10 @@ public class ModulContourlines {
     private ArrayList<String> kacheln = null;
     private ArrayList<String> filesToDelete = null;
     private FileTools fileTool = null;
+    private String grassGisrc = null;
+    private String grassGisdbase = null;
+    private String grassLocation = null;
+    private String grassMapset = null;
 
     /**
      * Konstruktor der Modul-Klasse
@@ -57,6 +66,16 @@ public class ModulContourlines {
         this.filesToDelete = new ArrayList<>();
         this.fileTool = new FileTools();
     }
+    
+    public ModulContourlines(boolean standalone, HoehenlinienConfig hConfig,
+            DisplayMethods logger, String baseData) {
+        this.standalone = standalone;
+        this.hConfig = hConfig;
+        this.logger = logger;
+        this.filesToDelete = new ArrayList<>();
+        this.fileTool = new FileTools();
+        this.baseData = baseData;
+    }
 
     /**
      * Start-Methode für die Erstellung eines Höhenlinien-Datensatzes
@@ -65,6 +84,8 @@ public class ModulContourlines {
     public boolean generateContourlines() {
         String errMsg = "";
         boolean baseResult = true;
+        
+        System.out.println(this.clearOutputDir());
         
         if(this.standalone) {
             lidardataPath = hConfig.getInputModel().getLidardatapath().getAbsolutePath();
@@ -109,6 +130,30 @@ public class ModulContourlines {
                 logger.writeErrorStatus("Höhenlinien konnten nicht erstellt werden.");
                 
                 return false;
+            } else {
+                if(hConfig.getInputModel().getSmooth() != null || 
+                        hConfig.getInputModel().isForce3D()) {
+                    if(this.initializeGrass()) {
+                        if(this.makeGrassVectorImport()) {
+                            if(this.makeGrassSmooth()) {
+                                if(!this.makeGrassShpExport(GRASSSMOOTH)) {
+                                    logger.writeErrorStatus("Fehler der Smooth-Alogrithmus konnte nicht "
+                                            + "angwendet werden.");
+                                    return false;
+                                }
+                            } else {
+                                logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus (GRASS-Smooth)");
+                                return false;
+                            }
+                        } else {
+                            logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus (GRASS-Import)");
+                            return false;
+                        }
+                    } else {
+                        logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus");
+                        return false;
+                    }
+                }
             }
         } else {
             errMsg += "Fehler beim Erstellen der Datengrundlage.";
@@ -119,7 +164,405 @@ public class ModulContourlines {
             return false;
         }
         
+        this.deleteOldFiles();
         return true;
+    }
+    
+    private boolean makeGrassShpExport(String inputToExport) {
+        String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
+        String output = baseOutputDir + CONTOURLINESSHPNAME + ".shp";
+        int errNumber = 0;
+        HashMap<String, String> grassExportArgs = new HashMap<>();
+        grassExportArgs.put("input", inputToExport);
+        grassExportArgs.put("type", "line");
+        grassExportArgs.put("layer", "1");
+        grassExportArgs.put("format", "ESRI_Shapefile");
+        grassExportArgs.put("output", output);
+        grassExportArgs.put("olayer", "default");
+        grassExportArgs.put("flags", "ecz");
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das GRASS-Vektorshape wird in "
+                + "eine Vektorshape-Datei konvertiert.");
+        
+        if(!fileTool.deleteExistingFile(baseOutputDir + CONTOURLINESSHPNAME + ".shp")) {
+            errNumber += 1;
+        }
+        
+        if(!fileTool.deleteExistingFile(baseOutputDir + CONTOURLINESSHPNAME + ".shx")) {
+            errNumber += 1;
+        }
+        
+        if(!fileTool.deleteExistingFile(baseOutputDir + CONTOURLINESSHPNAME + ".dbf")) {
+            errNumber += 1;
+        }
+        
+        if(errNumber > 0) {
+            this.logger.writeLog(LogPrefix.LOGERROR + "Fehler beim Löschen des "
+                    + "alten Höhenlinien-Datensatzes. Bitte löschen Sie die Dateien "
+                    + "von Hand.");
+            
+            this.logger.writeErrorStatus("Fehler beim Löschen des alten Höhenlinien-Datensatzes");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die Batch-Datei zum Anstossen "
+                + "des Exports wird in das Zielverzeichnis kopiert");
+        
+        if(this.writeGrassExportBatch(grassExportArgs)) {
+            
+            this.logger.writeLog(LogPrefix.LOGINFO + "Die Python-Datei wird in das "
+                    + "Zielverzeichnis kopiert");
+            
+            if(fileTool.copyInsideFileToDisk(GRASSEXPORT + ".py", baseOutputDir)) {
+                try {
+                    this.logger.writeLog(LogPrefix.LOGINFO + "Beginn des Exports");
+                    
+                    String query = "cmd /c start " + baseOutputDir
+                            + GRASSEXPORT + ".bat";
+                    
+                    Process process = Runtime.getRuntime().exec(query);
+                    
+                    process.waitFor();
+                    
+                    String errMsg = "Fehler beim Exportieren des GRASS-Vektors in "
+                            + "ein Shapevektor.";
+                    if(this.doesResultExits(output, errMsg)) {
+                        this.filesToDelete.add(baseOutputDir + GRASSEXPORT + ".bat");
+                        this.filesToDelete.add(baseOutputDir + GRASSEXPORT + ".py");
+                        
+                        this.logger.writeLog(LogPrefix.LOGINFO + "Der Export war "
+                                + "erfolgreich");
+                        
+                        return true;
+                    }
+                } catch (IOException ex) {
+                    //Log error
+                } catch (InterruptedException ex) {
+                    //Log error
+                }
+            } else {
+                this.logger.writeLog(LogPrefix.LOGERROR + "Die Python-Datei konnte "
+                        + "nicht erfolgreich in das Zielverzeichnis kopiert werden");
+            }
+        }
+        
+        return false;
+    }
+    
+    private boolean makeGrassSmooth() {
+        HashMap<String, String> grassSmoothArgs = new HashMap<>();
+        String smoothAlogChosen = this.hConfig.getInputModel().getSmooth();
+        String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Der gewählte Smooth-Algorithmus "
+                + "wird auf das GRASS-Vektorshape angewandt");
+        
+        if(smoothAlogChosen.equals("Chaiken")) {
+            grassSmoothArgs.put("input", GRASSVECTORIMPORT);
+            grassSmoothArgs.put("type", ChaikenSmooth.TYPE);
+            grassSmoothArgs.put("layer", ChaikenSmooth.LAYER);
+            grassSmoothArgs.put("flags", ChaikenSmooth.FLAGS);
+            grassSmoothArgs.put("method", ChaikenSmooth.METHOD);
+            grassSmoothArgs.put("threshold", ChaikenSmooth.THRESHOLD);
+            grassSmoothArgs.put("lookAhead", ChaikenSmooth.LOOK_AHEAD);
+            grassSmoothArgs.put("reduction", ChaikenSmooth.REDUCTION);
+            grassSmoothArgs.put("slide", ChaikenSmooth.SLIDE);
+            grassSmoothArgs.put("angleThresh", ChaikenSmooth.ANGLE_THRESH);
+            grassSmoothArgs.put("degreeThresh", ChaikenSmooth.DEGREE_THRESH);
+            grassSmoothArgs.put("closenessThresh", ChaikenSmooth.CLOSENESS_THRESH);
+            grassSmoothArgs.put("betweenessThresh", ChaikenSmooth.BETWEENESS_THRESH);
+            grassSmoothArgs.put("alpha", ChaikenSmooth.ALPHA);
+            grassSmoothArgs.put("beta", ChaikenSmooth.BETA);
+            grassSmoothArgs.put("iterations", ChaikenSmooth.ITERATIONS);
+            grassSmoothArgs.put("output", GRASSSMOOTH);
+        } else if(smoothAlogChosen.equals("Hermite")) {
+            grassSmoothArgs.put("input", GRASSVECTORIMPORT);
+            grassSmoothArgs.put("type", HermiteSmooth.TYPE);
+            grassSmoothArgs.put("layer", HermiteSmooth.LAYER);
+            grassSmoothArgs.put("flags", HermiteSmooth.FLAGS);
+            grassSmoothArgs.put("method", HermiteSmooth.METHOD);
+            grassSmoothArgs.put("threshold", HermiteSmooth.THRESHOLD);
+            grassSmoothArgs.put("lookAhead", HermiteSmooth.LOOK_AHEAD);
+            grassSmoothArgs.put("reduction", HermiteSmooth.REDUCTION);
+            grassSmoothArgs.put("slide", HermiteSmooth.SLIDE);
+            grassSmoothArgs.put("angleThresh", HermiteSmooth.ANGLE_THRESH);
+            grassSmoothArgs.put("degreeThresh", HermiteSmooth.DEGREE_THRESH);
+            grassSmoothArgs.put("closenessThresh", HermiteSmooth.CLOSENESS_THRESH);
+            grassSmoothArgs.put("betweenessThresh", HermiteSmooth.BETWEENESS_THRESH);
+            grassSmoothArgs.put("alpha", HermiteSmooth.ALPHA);
+            grassSmoothArgs.put("beta", HermiteSmooth.BETA);
+            grassSmoothArgs.put("iterations", HermiteSmooth.ITERATIONS);
+            grassSmoothArgs.put("output", GRASSSMOOTH);
+        } else if(smoothAlogChosen.equals("Boyle")) {
+            grassSmoothArgs.put("input", GRASSVECTORIMPORT);
+            grassSmoothArgs.put("type", BoyleSmooth.TYPE);
+            grassSmoothArgs.put("layer", BoyleSmooth.LAYER);
+            grassSmoothArgs.put("flags", BoyleSmooth.FLAGS);
+            grassSmoothArgs.put("method", BoyleSmooth.METHOD);
+            grassSmoothArgs.put("threshold", BoyleSmooth.THRESHOLD);
+            grassSmoothArgs.put("lookAhead", BoyleSmooth.LOOK_AHEAD);
+            grassSmoothArgs.put("reduction", BoyleSmooth.REDUCTION);
+            grassSmoothArgs.put("slide", BoyleSmooth.SLIDE);
+            grassSmoothArgs.put("angleThresh", BoyleSmooth.ANGLE_THRESH);
+            grassSmoothArgs.put("degreeThresh", BoyleSmooth.DEGREE_THRESH);
+            grassSmoothArgs.put("closenessThresh", BoyleSmooth.CLOSENESS_THRESH);
+            grassSmoothArgs.put("betweenessThresh", BoyleSmooth.BETWEENESS_THRESH);
+            grassSmoothArgs.put("alpha", BoyleSmooth.ALPHA);
+            grassSmoothArgs.put("beta", BoyleSmooth.BETA);
+            grassSmoothArgs.put("iterations", BoyleSmooth.ITERATIONS);
+            grassSmoothArgs.put("output", GRASSSMOOTH);
+        } else {
+            this.logger.writeLog(LogPrefix.LOGERROR + "Der gewählte Smooth-Algorithmus "
+                    + "ist nicht in diesem Programm implementiert");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die Batch-Datei zum Anstossen "
+                + "des Smooth-Alogrithmus wird in das Zielverzeichnis kopiert");
+        if(this.writeGrassSmoothBatch(grassSmoothArgs)) {
+            
+            this.logger.writeLog(LogPrefix.LOGINFO + "Die Python-Datei wird in das "
+                    + "Zielverzeichnis kopiert");
+            
+            if(fileTool.copyInsideFileToDisk(GRASSSMOOTH + ".py", baseOutputDir)) {
+                try {
+                    this.logger.writeLog(LogPrefix.LOGINFO + "Beginn der Smooth-Anwendung");
+                    
+                    String query = "cmd /c " + baseOutputDir
+                            + GRASSSMOOTH + ".bat";
+                    
+                    Process process = Runtime.getRuntime().exec(query);
+                    
+                    process.waitFor();
+                    
+                    String output = this.grassGisdbase + "\\" + GRASSVECTORPATH + "\\"
+                            + GRASSSMOOTH;
+                    
+                    String errMsg = "Fehler beim Durchführen des Smooth-Algorithmus";
+                    if(this.doesResultExits(output, errMsg)) {
+                        this.filesToDelete.add(baseOutputDir + GRASSSMOOTH + ".bat");
+                        this.filesToDelete.add(baseOutputDir + GRASSSMOOTH + ".py");
+                        
+                        this.logger.writeLog(LogPrefix.LOGINFO + "Der Smooth-Algorithmus "
+                                + "wurde erfolgreich angewandt");
+                        
+                        return true;
+                    }
+                } catch (IOException ex) {
+                    //Log error
+                } catch (InterruptedException ex) {
+                    //Log error
+                }
+            } else {
+                this.logger.writeLog(LogPrefix.LOGERROR + "Die Python-Datei konnte "
+                        + "nicht erfolgreich in das Zielverzeichnis kopiert werden");
+            }
+        } 
+        
+        return false;
+    }
+    
+    private boolean makeGrassVectorImport() {
+        HashMap<String, String> vectorImportArgs = new HashMap<>();
+        vectorImportArgs.put("input", baseData);
+        vectorImportArgs.put("output", GRASSVECTORIMPORT);
+        String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das Vektorshape wird in ein GRASS-"
+                + "Vektorshape konvertiert");
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die Batch-Datei zum Anstossen "
+                + "der Konvertierung wird in das Zielverzeichnis kopiert");
+        if(this.writeGrassVectorImportBatch(vectorImportArgs)) {
+            
+            this.logger.writeLog(LogPrefix.LOGINFO + "Die Python-Datei wird in das "
+                    + "Zielverzeichnis kopiert");
+            
+            if(fileTool.copyInsideFileToDisk(GRASSVECTORIMPORT + ".py", baseOutputDir)) {
+                try {
+                    
+                    this.logger.writeLog(LogPrefix.LOGINFO + "Beginn der Konvertierung");
+                    
+                    String query = "cmd /c " + baseOutputDir
+                            + GRASSVECTORIMPORT + ".bat";
+                    
+                    Process process = Runtime.getRuntime().exec(query);
+                    
+                    process.waitFor();
+                    
+                    String output = this.grassGisdbase + "\\" + GRASSVECTORPATH + "\\"
+                            + GRASSVECTORIMPORT;
+                    
+                    String errMsg = "Fehler bei der Konvertierung der Vektorshape-Datei "
+                            + "in ein GRASS-Vektorshape.";
+                    if(this.doesResultExits(output, errMsg)) {
+                        this.filesToDelete.add(baseOutputDir + GRASSVECTORIMPORT + ".bat");
+                        this.filesToDelete.add(baseOutputDir + GRASSVECTORIMPORT + ".py");
+                        
+                        this.logger.writeLog(LogPrefix.LOGINFO + "Die Vektorshape-Datei "
+                                + "wurde erfolgreich konvertiert");
+                        
+                        return true;
+                    }
+                } catch (IOException ex) {
+                    //Log error
+                } catch (InterruptedException ex) {
+                    //Log error
+                }
+            } else {
+                this.logger.writeLog(LogPrefix.LOGERROR + "Die Python-Datei konnte "
+                        + "nicht erfolgreich in das Zielverzeichnis kopiert werden");
+            }
+        }
+        
+        return false;
+    }
+    
+    private boolean writeGrassExportBatch(HashMap<String, String> args) {
+        String batchname = GRASSEXPORT + ".bat";
+        String pythonmodule = GRASSEXPORT + ".py";
+        ArrayList<String> properArgs = new ArrayList<>();
+        properArgs.add(args.get("input"));
+        properArgs.add(args.get("type"));
+        properArgs.add(args.get("layer"));
+        properArgs.add(args.get("format"));
+        properArgs.add(args.get("output"));
+        properArgs.add(args.get("olayer"));
+        properArgs.add(args.get("flags"));
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die Batch-Datei wird in das "
+                + "Zielverzeichnis kopiert");
+        
+        return this.writeGrassBatch(batchname, pythonmodule, properArgs);
+    }
+    
+    private boolean writeGrassSmoothBatch(HashMap<String, String> args) {
+        String batchname = GRASSSMOOTH + ".bat";
+        String pythonmodule = GRASSSMOOTH + ".py";
+        ArrayList<String> properArgs = new ArrayList<>();
+        properArgs.add(args.get("input"));
+        properArgs.add(args.get("type"));
+        properArgs.add(args.get("layer"));
+        properArgs.add(args.get("flags"));
+        properArgs.add(args.get("method"));
+        properArgs.add(args.get("threshold"));
+        properArgs.add(args.get("lookAhead"));
+        properArgs.add(args.get("reduction"));
+        properArgs.add(args.get("slide"));
+        properArgs.add(args.get("angleThresh"));
+        properArgs.add(args.get("degreeThresh"));
+        properArgs.add(args.get("closenessThresh"));
+        properArgs.add(args.get("betweenessThresh"));
+        properArgs.add(args.get("alpha"));
+        properArgs.add(args.get("beta"));
+        properArgs.add(args.get("iterations"));
+        properArgs.add(args.get("output"));
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die Batch-Datei wird in das "
+                + "Zielverzeichnis kopiert");
+        
+        return this.writeGrassBatch(batchname, pythonmodule, properArgs);
+    }
+    
+    private boolean writeGrassVectorImportBatch(HashMap<String, String> args) {
+        String batchname = GRASSVECTORIMPORT + ".bat";
+        String pythonmodule = GRASSVECTORIMPORT + ".py";
+        ArrayList<String> properArgs = new ArrayList<>();
+        properArgs.add(args.get("input"));
+        properArgs.add(args.get("output"));
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die Batch-Datei wird in das "
+                + "Zielverzeichnis kopiert");
+        
+        return this.writeGrassBatch(batchname, pythonmodule, properArgs);
+    }
+    
+    private boolean writeGrassBatch(String batchname, String pythonmodule, 
+            ArrayList<String> args) {
+        if(pythonmodule.endsWith(".py")) {
+            String output = this.hConfig.getInputModel().getOutput().getAbsolutePath() + "\\"
+                    + batchname;
+
+            String grassGisbase = this.hConfig.getPathModel().getGrasspath().getAbsolutePath();
+            String grassPath = grassGisbase + "\\bin;" + grassGisbase + "\\scripts;"
+                    + grassGisbase + "\\lib;" + this.hConfig.getPathModel().getGrassbinpath()
+                            .getAbsolutePath();
+
+            String batchContent = "@echo off \n"
+                    + "set GISBASE=" + grassGisbase + "\n" 
+                    + "set GISRC=" + this.grassGisrc + "\n"
+                    + "set Path=" + grassPath + "\n" 
+                    + "\"" + this.hConfig.getPathModel().getPythonpath().getAbsolutePath() + "\\python.exe\" "
+                    + "\"" + this.hConfig.getInputModel().getOutput().getAbsolutePath() + "\\"
+                    + pythonmodule + "\" \"" + grassGisbase + "\" \"" + grassGisdbase + "\" \""
+                    + grassLocation + "\" \"" + grassMapset + "\" ";
+
+            for (String grassArg : args) {
+                batchContent += "\"" + grassArg + "\" ";
+            }
+
+            if(fileTool.writeBatchFile(output, batchContent)) {
+                this.logger.writeLog(LogPrefix.LOGINFO + "Die Batch-Datei wurde erfolgreich "
+                        + "in das Zielverzeichnis kopiert");
+                
+                return true;
+            } else {
+                this.logger.writeLog(LogPrefix.LOGERROR + "Die Batch-Datei konnte nicht "
+                        + "in das Zielverzeichnis kopiert werden. Bitte überprüfen Sie, "
+                        + "ob Sie auf das Zielverzeichnis Schreibbrechtigungen haben oder "
+                        + "kontaktieren Sie Ihren Administrator und senden Sie ihm Ihr"
+                        + "Logfile");
+            }
+        }
+        return false;
+    }
+    
+    private boolean initializeGrass() {
+        grassGisdbase = this.hConfig.getInputModel().getOutput().getAbsolutePath() + "\\"
+                + "grassmapset";
+        grassLocation = "glocation";
+        grassMapset = "grassmapset";
+        grassGisrc = this.hConfig.getInputModel().getOutput().getAbsolutePath() + "\\"
+                + "grassrc6";
+        
+        String grassrcContent = "GISBASE: " + grassGisdbase + "\nLOCATION: " 
+                + grassLocation + "\nMAPSET: " + grassMapset + "\n";
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die grassrc6-Datei wird in das "
+                + "Zielverzeichnis kopiert.");
+        
+        if(fileTool.writeGrassrcFile(grassGisrc, grassrcContent)) {
+            /*if(fileTool.copyInsideFileToDisk("grassmapset", this.hConfig
+                    .getInputModel().getOutput().getAbsolutePath())) {
+                return true;
+            }*/
+            
+            this.logger.writeLog(LogPrefix.LOGINFO + "Die grassrc6-Datei wurde in "
+                    + "das Zielverzeichnis geschrieben");
+            
+            this.logger.writeLog(LogPrefix.LOGINFO + "Das GRASS-Mapset wird in das "
+                    + "Zielverzeichnis kopiert");
+            if(fileTool.copyInsideDirToDisc("grassmapset.zip", this.hConfig
+                    .getInputModel().getOutput().getAbsolutePath())) {
+                return true;
+            } else {
+                this.logger.writeLog(LogPrefix.LOGERROR + "Das GRASS-Mapset konnte nicht "
+                    + "in das Zielverzeichnis kopiert werden, bitte schauen Sie "
+                    + "ob Sie auf das Verzeichnis Schreibberechtigungen haben oder "
+                    + "melden Sie sich bei Ihrem Administrator und senden Sie ihm "
+                    + "Ihr Logfile");
+            }
+        } else {
+            this.logger.writeLog(LogPrefix.LOGERROR + "Die grassrc6-Datei konnte nicht "
+                    + "in das Zielverzeichnis kopiert werden, bitte schauen Sie "
+                    + "ob Sie auf das Verzeichnis Schreibberechtigungen haben oder "
+                    + "melden Sie sich bei Ihrem Administrator und senden Sie ihm "
+                    + "Ihr Logfile");
+        }
+        
+        return false;
     }
     
     /**
@@ -182,6 +625,8 @@ public class ModulContourlines {
                 logger.writeLog(LogPrefix.LOGINFO + "Höhenlinien wurden erstellt.");
 
                 logger.writeStatus("Höhenlinien wurden erstellt.");
+                
+                this.filesToDelete.add(source);
                 
                 return true;
             }
@@ -251,8 +696,10 @@ public class ModulContourlines {
                 if(this.doesResultExits(baseData, errResult)) {
                     //logger.writeLog("Ausdünnung wurde durchgeführt.\n ----------------");
                     logger.writeLog(LogPrefix.LOGINFO + "Ausdünnung wurde durchgeführt.");
-
+                    
                     this.logger.writeStatus("Ausschnitt wurde ausgedünnt.");
+                    
+                    this.filesToDelete.add(source);
                     
                     return true;
                 }
@@ -295,7 +742,7 @@ public class ModulContourlines {
             this.logger.writeStatus("Kacheln wurden bezogen.");
             
             if(this.generateVRT()) {
-                this.logger.writeStatus("Virtuelles Raster wurde erstellt.");
+                this.logger.writeStatus("Virtuelles Format wurde erstellt.");
                 
                 if(this.translateVRTToTiff()){
                     this.logger.writeStatus("Raster wurde ausgeschnitten.");
@@ -321,7 +768,7 @@ public class ModulContourlines {
                     return false;
                 }
             } else {
-                this.logger.writeErrorStatus("Virtuelles Raster konnte nicht erstellt werden.");
+                this.logger.writeErrorStatus("Virtuelles Format konnte nicht erstellt werden.");
                 
 //                errMsg += "Die VRT-Datei konnte nicht erstellt werden.\n"
 //                        + "Bitte prüfen Sie, ob Sie den korrekten GDAL-Installationspfad "
@@ -390,6 +837,7 @@ public class ModulContourlines {
             if(this.doesResultExits(baseData, errResult)) {
                 //logger.writeLog("TIFF-Datei wurde umgewandelt.\n ----------------");
                 logger.writeLog(LogPrefix.LOGINFO + "TIFF-Datei wurde umgewandelt.");
+                this.filesToDelete.add(fittedTif);
                 
                 return true;
             }
@@ -455,6 +903,7 @@ public class ModulContourlines {
             if(this.doesResultExits(fittedTif, errResult)) {
                 //logger.writeLog("VRT-Datei wurde umgewandelt und zugeschnitten.\n ----------------");
                 logger.writeLog(LogPrefix.LOGINFO + "VRT-Datei wurde umgewandelt und zugeschnitten.");
+                this.filesToDelete.add(vrtRectangle);
                 
                 return true;
             }
@@ -611,6 +1060,48 @@ public class ModulContourlines {
             this.logger.writeLog(LogPrefix.LOGERROR + errMsg);
             
             return false;
+        }
+        
+        return true;
+    }
+    
+    private boolean clearOutputDir() {
+        String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
+        String mapsetDir = baseOutputDir + GRASSMAPSETDIR;
+        String contourlinesDBF = baseOutputDir + CONTOURLINESSHPNAME + ".dbf";
+        String contourlinesSHX = baseOutputDir + CONTOURLINESSHPNAME + ".shx";
+        String contourlinesSHP = baseOutputDir + CONTOURLINESSHPNAME + ".shp";
+        
+        int errNumber = 0;
+        
+        if(!fileTool.deleteExistingDir(mapsetDir)) {
+            errNumber += 1;
+        }
+        
+        if(!fileTool.deleteExistingFile(contourlinesDBF)) {
+            errNumber += 1;
+        }
+        
+        if(!fileTool.deleteExistingFile(contourlinesSHP)) {
+            errNumber += 1;
+        }
+        
+        if(!fileTool.deleteExistingFile(contourlinesSHX)) {
+            errNumber += 1;
+        }
+        
+        if(errNumber > 0) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private boolean deleteOldFiles() {
+        for (String fileToDelete : filesToDelete) {
+            if(!fileTool.deleteExistingFile(fileToDelete)) {
+                return false;
+            }
         }
         
         return true;

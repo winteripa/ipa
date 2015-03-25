@@ -7,8 +7,14 @@
 package module;
 
 import base.DisplayMethods;
+import bl.BusinessLogic;
 import bo.HoehenlinienConfig;
+import bo.LogPrefix;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import tools.FormatTools;
+import tools.NumberTools;
 
 /**
  * Startklasse für das Modul "Contourlines"
@@ -34,8 +40,33 @@ public class Startclass {
     
     
     //Start-Methode für Modulbetrieb
-    /*public boolean startModule(String params, DisplayMethods logger) {
+    public boolean startModule(String params, BusinessLogic abrBL, DisplayMethods logger) {
+        HoehenlinienConfig hConfig = new HoehenlinienConfig();
+        FormatTools formatTool = new FormatTools();
+        NumberTools numberTool = new NumberTools();
+        HashMap<String, String> extractedParams = formatTool.extractModuleCommandlineParams(params);
         
-        return false;
-    }*/
+        hConfig.getPathModel().setGdalpath(new File(abrBL.getGdalpfad()));
+        hConfig.getPathModel().setGrassbinpath(new File(abrBL.getGrassbinPfad()));
+        hConfig.getPathModel().setGrasspath(new File(abrBL.getGrassPfad()));
+        hConfig.getPathModel().setPythonpath(new File(abrBL.getPythonPfad()));
+        
+        if(extractedParams == null) {
+            logger.writeLog(LogPrefix.LOGERROR + "Fehler bei der Extraktion der Modulparameter, "
+                    + "bitte Überprüfen Sie die Parameter auf ihre Gültigkeit");
+        }
+        
+        hConfig.getInputModel().setAequidistance(numberTool.convertToInteger(extractedParams.get("aequi")));
+        hConfig.getInputModel().setForce3D(Boolean.valueOf(extractedParams.get("force3d")));
+        hConfig.getInputModel().setLidardatapath(new File(extractedParams.get("lidardata")));
+        hConfig.getInputModel().setOutput(new File(extractedParams.get("output")));
+        hConfig.getInputModel().setSmooth(extractedParams.get("smooth"));
+        hConfig.getInputModel().setThinning(numberTool.convertToInteger(extractedParams.get("thinning")));
+        
+        String baseData = extractedParams.get("basedata");
+        
+        module = new ModulContourlines(false, hConfig, logger, baseData);
+        
+        return module.generateContourlines();
+    }
 }

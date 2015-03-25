@@ -6,6 +6,10 @@
 
 package tools;
 
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 /**
  * Klasse mit nützlichen Methoden für den Umgang mit Formaten
@@ -79,5 +83,64 @@ public class FormatTools {
                 + coords[0] + " " + coords[1] + "))";
         
         return wktString;
+    }
+    
+    public HashMap<String, String> extractModuleCommandlineParams(String params) {
+        Pattern pattern = Pattern.compile("'(.*?)'");
+        Matcher matcher = pattern.matcher(params);
+        HashMap<String, String> extractedParams = new HashMap<>();
+        NumberTools numberTool = new NumberTools();
+        FileTools fileTool = new FileTools();
+        
+        while(matcher.find()) {
+            int strLen = matcher.group(1).length();
+            String keyValPair = matcher.group(1).substring(1, strLen - 1);
+            String[] extractedKeyVal = keyValPair.split("=");
+            
+            if(extractedKeyVal.length != 2) {
+                extractedParams = null;
+                break;
+            } else {
+                String key = extractedKeyVal[0];
+                String val = extractedKeyVal[1];
+                
+                if(key.equals("aequi") || key.equals("thinning")) {
+                    if(numberTool.isNumeric(val)) {
+                        extractedParams.put(key, val);
+                    } else {
+                        extractedParams = null;
+                        break;
+                    }
+                } else if(key.equals("force3d")) {
+                    if(val.equals("true") || val.equals("false")) {
+                        extractedParams.put(key, val);
+                    } else {
+                        extractedParams = null;
+                        break;
+                    }
+                } else if(key.equals("lidardata") || key.equals("output") || 
+                        key.equals("basedata")) {
+                    if(fileTool.doesFileExists(val)) {
+                        extractedParams.put(key, val);
+                    } else {
+                        extractedParams = null;
+                        break;
+                    }
+                } else if(key.equals("smooth")) {
+                    if(val != null) {
+                        extractedParams.put(key, val);
+                    } else {
+                        extractedParams = null;
+                        break;
+                    }
+                } 
+            }
+        }
+        
+        if(extractedParams.size() != 7) {
+            extractedParams = null;
+        }
+        
+        return extractedParams;
     }
 }

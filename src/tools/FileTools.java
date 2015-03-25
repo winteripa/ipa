@@ -14,9 +14,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -109,6 +115,25 @@ public class FileTools {
         return false;
     }
     
+    public boolean deleteExistingDir(String dirpath) {
+        try {
+            File file = new File(dirpath);
+            
+            if(file.exists()) {
+                FileUtils.deleteDirectory(file);
+            }
+            
+            if(!file.exists()) {
+                return true;
+            }
+        } catch (IOException ex) {
+            //Hier kommt kein Code rein, da dieser Error nur geworfen wird, 
+            //falls die Datei zum Löschen nicht vorhanden wäre
+        }
+        
+        return false;
+    }
+    
     /**
      * Methode zum Prüfen, ob eine Datei existiert
      * @param filepath Pfad zur Datei
@@ -134,9 +159,9 @@ public class FileTools {
         OutputStream resOutStream = null;
         InputStream resInStream = null;
         
-        String output = outputPath + insideRes;
+        String output = outputPath + "\\" + insideRes;
         try {
-            resInStream = FileTools.class.getResourceAsStream(insideRes);
+            resInStream = FileTools.class.getResourceAsStream("/res/" + insideRes);
             resOutStream = new FileOutputStream(output);
             
             IOUtils.copy(resInStream, resOutStream);
@@ -146,12 +171,77 @@ public class FileTools {
             }
         } catch (FileNotFoundException ex) {
             //Log error
+        } catch (IOException ex) {
+            //Log error
         } finally {
             try {
                 resInStream.close();
                 resOutStream.close();
             } catch (IOException ex) {
                 //Log error
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean copyInsideDirToDisc(String insideRes, String outputPath) {
+        try {
+            InputStream resInStream = FileTools.class.getResourceAsStream("/res/" + insideRes);
+            ZipInputStream zis = new ZipInputStream(resInStream);
+            byte[] buffer = new byte[1024];
+            ZipEntry zipContent = zis.getNextEntry();
+            
+            while (zipContent != null) {
+                String filename = zipContent.getName();
+                File fileToWrite = new File(outputPath + "\\" + filename);
+                
+                //Diese Zeile ist nötig damit keine FileNotFoundExceptions produziert werden
+                //new File(fileToWrite.getParent()).mkdirs();
+                if(zipContent.isDirectory()) {
+                    if(!fileToWrite.mkdirs()) {
+                        return false;
+                    }
+                    zipContent = zis.getNextEntry();
+                    continue;
+                }
+                
+                FileOutputStream resOutStream = new FileOutputStream(fileToWrite);
+                
+                int filelen;
+                while((filelen = zis.read(buffer)) > 0) {
+                    resOutStream.write(buffer, 0, filelen);
+                }
+                
+                resOutStream.close();
+                zis.closeEntry();
+                zipContent = zis.getNextEntry();
+            }
+            
+            zis.close();
+        } catch (IOException ex) {
+            //Log error
+        }
+        
+        return true;
+    }
+    
+    public boolean writeBatchFile(String batchpath, String content) {
+        if(deleteExistingFile(batchpath)) {
+            this.writeFile(false, batchpath, content);
+            if(doesFileExists(batchpath)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean writeGrassrcFile(String grassrcpath, String content) {
+        if(deleteExistingFile(grassrcpath)) {
+            this.writeFile(false, grassrcpath, content);
+            if(doesFileExists(grassrcpath)) {
+                return true;
             }
         }
         

@@ -16,6 +16,14 @@ public class HoehenlinienConfig {
     private PathModel pathModel = null;
 
     /**
+     * Konstrukter, um leere Models zu erstellen
+     */
+    public HoehenlinienConfig() {
+        this.inputModel = new InputModel();
+        this.pathModel = new PathModel();
+    }
+    
+    /**
      * Getter-Methode für die Version
      * @return Version
      */

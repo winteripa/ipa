@@ -22,13 +22,14 @@ public class StandaloneLogger implements DisplayMethods {
     private Integer orderNumber = null;
     private String logPath = null;
     private StatusController statusGui = null;
-    private String logPrefix = null;
+    private String logDatePrefix = null;
+    private String logTimePrefix = null;
     
     public StandaloneLogger() {
         fileTool = new FileTools();
         timeTool = new TimeTools();
         timestamp = timeTool.getCurrDatetime();
-        logPrefix = timeTool.getCurrDate() + ";" + timeTool.getCurrTime();
+        logDatePrefix = timeTool.getCurrDate() + ";";
     }
     
     @Override
@@ -40,8 +41,9 @@ public class StandaloneLogger implements DisplayMethods {
     @Override
     public void writeLog(String logMessage) {
         if(orderNumber != null && logPath != null) {
+            this.logTimePrefix = timeTool.getCurrTime() + ";";
             String logfilename = logPath + "\\" + orderNumber + "_logfile_" + timestamp + ".log";
-            fileTool.writeLogfile(logfilename, logPrefix + ";" + logMessage);
+            fileTool.writeLogfile(logfilename, logDatePrefix + logTimePrefix + logMessage);
         } else {
             this.writeStatus(logMessage);
         }
