@@ -11,6 +11,7 @@ import bl.HoehenlinienManagement;
 import bo.GuiEnum;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -106,7 +107,7 @@ public class StatusController implements Initializable {
      */
     @FXML
     private void onOrder(MouseEvent event) {
-        this.setProgress(-1);
+        //this.setProgress(-1);
         Thread th = new Thread(hm);
         th.start();
     }
@@ -151,8 +152,23 @@ public class StatusController implements Initializable {
         return btnOrder;
     }
 
-    public void setProgress(double progress) {
-        this.pbAppProgress.setProgress(progress);
+    public void setProgress(final double progress) {
+        //this.pbAppProgress.setProgress(progress);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                pbAppProgress.setProgress(progress);
+            }
+        });
+    }
+    
+    public void addStatusMessages(final String message) {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                txtStatus.appendText(message);
+            }
+        });
     }
     
     /**

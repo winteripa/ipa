@@ -86,7 +86,7 @@ public class FormatTools {
     }
     
     public HashMap<String, String> extractModuleCommandlineParams(String params) {
-        Pattern pattern = Pattern.compile("'(.*?)'");
+        Pattern pattern = Pattern.compile("-(.*?) ");
         Matcher matcher = pattern.matcher(params);
         HashMap<String, String> extractedParams = new HashMap<>();
         NumberTools numberTool = new NumberTools();
@@ -94,7 +94,9 @@ public class FormatTools {
         
         while(matcher.find()) {
             int strLen = matcher.group(1).length();
-            String keyValPair = matcher.group(1).substring(1, strLen - 1);
+            //String keyValPair = matcher.group(1).substring(0, strLen - 1);
+            String keyValPair = matcher.group(1);
+            System.out.println(keyValPair);
             String[] extractedKeyVal = keyValPair.split("=");
             
             if(extractedKeyVal.length != 2) {
@@ -118,14 +120,14 @@ public class FormatTools {
                         extractedParams = null;
                         break;
                     }
-                } else if(key.equals("lidardata") || key.equals("output") || 
+                /*} else if(key.equals("lidardata") || key.equals("output") || 
                         key.equals("basedata")) {
                     if(fileTool.doesFileExists(val)) {
                         extractedParams.put(key, val);
                     } else {
                         extractedParams = null;
                         break;
-                    }
+                    }*/
                 } else if(key.equals("smooth")) {
                     if(val != null) {
                         extractedParams.put(key, val);
@@ -137,9 +139,12 @@ public class FormatTools {
             }
         }
         
-        if(extractedParams.size() != 7) {
-            extractedParams = null;
+        if(extractedParams != null) {
+            if(extractedParams.size() != 4) {
+                extractedParams = null;
+            }
         }
+        
         
         return extractedParams;
     }

@@ -35,7 +35,11 @@ public class Startclass {
             ArrayList<String> arrKachelnr, DisplayMethods logger) {
         
         module = new ModulContourlines(true, hConfig, logger, arrKachelnr);
-        return module.generateContourlines();
+        if(module.prepareGenerateBase()) {
+            return module.generateContourlines();
+        }
+        
+        return false;
     }
     
     
@@ -56,17 +60,26 @@ public class Startclass {
                     + "bitte Überprüfen Sie die Parameter auf ihre Gültigkeit");
         }
         
+        ArrayList<String> mbr = abrBL.getMbr();
+        String strMbr = mbr.get(0) + "," + mbr.get(3) + "," + mbr.get(2) + ","
+                + mbr.get(1);
+        System.out.println(strMbr);
+        
+        hConfig.getInputModel().setCoordRectangle(strMbr);
         hConfig.getInputModel().setAequidistance(numberTool.convertToInteger(extractedParams.get("aequi")));
         hConfig.getInputModel().setForce3D(Boolean.valueOf(extractedParams.get("force3d")));
-        hConfig.getInputModel().setLidardatapath(new File(extractedParams.get("lidardata")));
-        hConfig.getInputModel().setOutput(new File(extractedParams.get("output")));
+        hConfig.getInputModel().setLidardatapath(new File(abrBL.getTranslatePath()));
+        hConfig.getInputModel().setOutput(new File(abrBL.getDownloadpfad()));
         hConfig.getInputModel().setSmooth(extractedParams.get("smooth"));
         hConfig.getInputModel().setThinning(numberTool.convertToInteger(extractedParams.get("thinning")));
         
-        String baseData = extractedParams.get("basedata");
+        //String baseData = extractedParams.get("basedata");
         
-        module = new ModulContourlines(false, hConfig, logger, baseData);
+        module = new ModulContourlines(false, hConfig, logger);
+        if(module.prepareGenerateBase()) {
+            return module.generateContourlines();
+        }
         
-        return module.generateContourlines();
+        return false;
     }
 }

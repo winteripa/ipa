@@ -21,7 +21,7 @@ import tools.FileTools;
  * @author u203011
  */
 public class ModulContourlines {
-    
+
     private static final double KACHEL_CELLSIZE = 0.5;
     private static final int KACHEL_COLS = 1000;
     private static final String GRASSVECTORIMPORT = "vectorimport";
@@ -67,35 +67,60 @@ public class ModulContourlines {
         this.fileTool = new FileTools();
     }
     
+    /**
+     * Konstruktor der Modul-Klasse für den Modulbetrieb
+     * Für den Modulbetrieb werden nicht die gleichen Argumente, wie im 
+     * Standalone-Betrieb benötigt. Die betroffenen Kachelnummern werden 
+     * durch den Pfad des fertigen Ausschnittes ersetzt.
+     * @param standalone Option für die Festlegung, ob im Standalone-Modus oder nicht
+     * @param hConfig Höhenlinien-Konfigurationsobjekt
+     * @param logger Objekt eines DisplayMethods-Logger
+     */
     public ModulContourlines(boolean standalone, HoehenlinienConfig hConfig,
-            DisplayMethods logger, String baseData) {
+            DisplayMethods logger) {
         this.standalone = standalone;
         this.hConfig = hConfig;
         this.logger = logger;
+        this.kacheln = new ArrayList<>();
         this.filesToDelete = new ArrayList<>();
         this.fileTool = new FileTools();
-        this.baseData = baseData;
     }
 
+    public boolean prepareGenerateBase() {
+        lidardataPath = hConfig.getInputModel().getLidardatapath().getAbsolutePath();
+        gdalbuildvrt = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdalbuildvrt.exe";
+        gdaltranslate = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdal_translate.exe";
+        
+        
+        if(!generateBase()) {
+            //logger.writeLog(errMsg);
+            logger.writeLog(LogPrefix.LOGERROR + "Fehler beim Erstellen der Datengrundlage.");
+            
+            return false;
+        }
+        
+        return true;
+    }
+    
     /**
      * Start-Methode für die Erstellung eines Höhenlinien-Datensatzes
      * @return Erstellungsstatus (erfolgreich oder nicht)
      */
     public boolean generateContourlines() {
         String errMsg = "";
-        boolean baseResult = true;
+        //boolean baseResult = true;
         
         System.out.println(this.clearOutputDir());
         
-        if(this.standalone) {
+        /*if(this.standalone) {
             lidardataPath = hConfig.getInputModel().getLidardatapath().getAbsolutePath();
             gdalbuildvrt = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdalbuildvrt.exe";
             gdaltranslate = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdal_translate.exe";
             
             baseResult = this.generateBase();
-        }
+        }*/
         
-        if(baseResult) {
+        //if(baseResult) {
             gdalcontour = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdal_contour.exe";
             
             if(!makeThinning()) {
@@ -135,39 +160,65 @@ public class ModulContourlines {
                         hConfig.getInputModel().isForce3D()) {
                     if(this.initializeGrass()) {
                         if(this.makeGrassVectorImport()) {
-                            if(this.makeGrassSmooth()) {
-                                if(!this.makeGrassShpExport(GRASSSMOOTH)) {
-                                    logger.writeErrorStatus("Fehler der Smooth-Alogrithmus konnte nicht "
-                                            + "angwendet werden.");
+                            if(hConfig.getInputModel().getSmooth() != null) {
+                                if(this.makeGrassSmooth()) {
+                                    if(!this.makeGrassShpExport(GRASSSMOOTH)) {
+                                        this.clearGrass();
+                                        this.deleteOldFiles();
+                        
+                                        logger.writeErrorStatus("Fehler der Smooth-Alogrithmus konnte nicht "
+                                                + "angwendet werden.");
+                                        return false;
+                                    }
+                                } else {
+                                    this.clearGrass();
+                                    this.deleteOldFiles();
+                                    
+                                    logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus (GRASS-Smooth)");
                                     return false;
                                 }
-                            } else {
-                                logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus (GRASS-Smooth)");
-                                return false;
                             }
                         } else {
+                            this.clearGrass();
+                            this.deleteOldFiles();
+                            
                             logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus (GRASS-Import)");
                             return false;
                         }
                     } else {
+                        this.clearGrass();
+                        this.deleteOldFiles();
+                        
                         logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus");
                         return false;
                     }
                 }
             }
-        } else {
+        /*} else {
             errMsg += "Fehler beim Erstellen der Datengrundlage.";
             
             //logger.writeLog(errMsg);
             logger.writeLog(LogPrefix.LOGERROR + errMsg);
             
             return false;
-        }
+        }*/
         
+        this.clearGrass();
         this.deleteOldFiles();
         return true;
     }
     
+    /**
+     * Methode zum Export eines GRASS-Vektorshapes in ein ESRI Shapefile.
+     * Diese Methode exportiert den gesmoothen Höhenlinien-Datensatz. 
+     * Aus diesem Grund werden zuerst die alten Höhenlinien-Datensätze im 
+     * Zielverzeichnis gelöscht. Anschliessend wird die Batch-Datei für die Ausführung
+     * des Python-Moduls und das Python-Modul für den Export selber in das 
+     * Zielverzeichnis kopiert und ausgeführt. Nach erfolgreicher Ausführung 
+     * werden das Batch-File und das Python-File wieder gelöscht
+     * @param inputToExport Name des GRASS-Vektorshapes, welches exportiert werden soll
+     * @return Erstellungsstatus des Shapefiles
+     */
     private boolean makeGrassShpExport(String inputToExport) {
         String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
         String output = baseOutputDir + CONTOURLINESSHPNAME + ".shp";
@@ -218,15 +269,20 @@ public class ModulContourlines {
                 try {
                     this.logger.writeLog(LogPrefix.LOGINFO + "Beginn des Exports");
                     
-                    String query = "cmd /c start " + baseOutputDir
-                            + GRASSEXPORT + ".bat";
+                    String query = "cmd /c \"" + baseOutputDir
+                            + GRASSEXPORT + ".bat\"";
                     
                     Process process = Runtime.getRuntime().exec(query);
                     
                     process.waitFor();
                     
+                    //Der Thread wird hier gestoppt, da die Dateierstellung noch 
+                    //ein wenig Zeit benötigt
+                    Thread.sleep(3000);
+                    
                     String errMsg = "Fehler beim Exportieren des GRASS-Vektors in "
                             + "ein Shapevektor.";
+                    
                     if(this.doesResultExits(output, errMsg)) {
                         this.filesToDelete.add(baseOutputDir + GRASSEXPORT + ".bat");
                         this.filesToDelete.add(baseOutputDir + GRASSEXPORT + ".py");
@@ -250,6 +306,15 @@ public class ModulContourlines {
         return false;
     }
     
+    /**
+     * Methode zur Anwendung eines Smooth-Algorithmus auf das GRASS-Vektorshape.
+     * Anhand des gewählten Smooth-Algorithmus werden die Parameter für die 
+     * Ausführung des Smooths bestimmt. Anschliessend wird die Batch-Datei zur 
+     * Ausführung des Python-Moduls und das Python-Modul für den Smooth-Algorithmus 
+     * in das Zielverzeichnis kopiert und ausgeführt. Nach erfolgreicher Ausführung 
+     * werden das Batch-File und das Python-File wieder gelöscht.
+     * @return Erstellungsstatus des gesmoothen GRASS-Vektorshapes
+     */
     private boolean makeGrassSmooth() {
         HashMap<String, String> grassSmoothArgs = new HashMap<>();
         String smoothAlogChosen = this.hConfig.getInputModel().getSmooth();
@@ -330,8 +395,8 @@ public class ModulContourlines {
                 try {
                     this.logger.writeLog(LogPrefix.LOGINFO + "Beginn der Smooth-Anwendung");
                     
-                    String query = "cmd /c " + baseOutputDir
-                            + GRASSSMOOTH + ".bat";
+                    String query = "cmd /c \"" + baseOutputDir
+                            + GRASSSMOOTH + ".bat\"";
                     
                     Process process = Runtime.getRuntime().exec(query);
                     
@@ -364,6 +429,12 @@ public class ModulContourlines {
         return false;
     }
     
+    /**
+     * Methode zum Import des Höhenlinien-Datensatzes (ESRI Shapefile) nach GRASS.
+     * In dieser Methode wird der bestehende Höhenlinien-Datensatz in ein GRASS-
+     * Vektorshape konvertiert. 
+     * @return 
+     */
     private boolean makeGrassVectorImport() {
         HashMap<String, String> vectorImportArgs = new HashMap<>();
         vectorImportArgs.put("input", baseData);
@@ -385,8 +456,8 @@ public class ModulContourlines {
                     
                     this.logger.writeLog(LogPrefix.LOGINFO + "Beginn der Konvertierung");
                     
-                    String query = "cmd /c " + baseOutputDir
-                            + GRASSVECTORIMPORT + ".bat";
+                    String query = "cmd /c \"" + baseOutputDir
+                            + GRASSVECTORIMPORT + ".bat\"";
                     
                     Process process = Runtime.getRuntime().exec(query);
                     
@@ -565,6 +636,13 @@ public class ModulContourlines {
         return false;
     }
     
+    public void clearGrass() {
+        String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
+        String mapsetDir = baseOutputDir + GRASSMAPSETDIR;
+        this.fileTool.deleteExistingDir(mapsetDir);
+        this.fileTool.deleteExistingFile(grassGisrc);
+    }
+    
     /**
      * Methode zum Erstellen der Höhenlinien aus dem ASC-Auschnitt
      * @return Erstellungsstatus
@@ -607,8 +685,8 @@ public class ModulContourlines {
 //            logger.writeLog("Output: " + baseData);
 //            logger.writeLog("");
             
-            String query = gdalcontour + " -i " + hConfig.getInputModel().getAequidistance()
-                    + " -a hoehe " + flag3D + " " + source + " " + baseData;
+            String query = "\""+ gdalcontour + "\" -i " + hConfig.getInputModel().getAequidistance()
+                    + " -a hoehe " + flag3D + " \"" + source + "\" \"" + baseData + "\"";
             
 //            logger.writeLog("Befehl: " + query);
 //            logger.writeLog("");
@@ -680,9 +758,11 @@ public class ModulContourlines {
                 String rectangle = splittedRectangle[0].trim() + " " + splittedRectangle[3].trim()
                         + " " + splittedRectangle[2].trim() + " " + splittedRectangle[1].trim();
                 
-                String query = gdaltranslate + " -projwin " + rectangle + " -of AAIGrid "
+                String query = "\"" + gdaltranslate + "\" -projwin " + rectangle + " -of AAIGrid "
                         + "-outsize " + percentThinning + " " + percentThinning
-                        + " -co force_cellsize=true " + source + " " + baseData;
+                        + " -co force_cellsize=true \"" + source + "\" \"" + baseData + "\"";
+                
+                System.out.println(query);
                 
                 //logger.writeLog("Befehl: " + query);
                 logger.writeLog(LogPrefix.LOGQUERY + query);
@@ -778,7 +858,8 @@ public class ModulContourlines {
 //                logger.writeLog(errMsg);
                 errMsg += "Die VRT-Datei konnte nicht erstellt werden. "
                         + "Bitte prüfen Sie, ob Sie den korrekten GDAL-Installationspfad "
-                        + "angegeben haben. Falls dies nicht die Ursache ist, "
+                        + "angegeben haben oder ob das von Ihnen gewählte Verzeichnis "
+                        + "beschreibbar ist. Falls dies nicht die Ursache ist, "
                         + "so melden Sie sich bitte beim Administrator und schicken "
                         + "Sie ihm das Logfile";
                 logger.writeLog(LogPrefix.LOGERROR + errMsg);
@@ -823,7 +904,8 @@ public class ModulContourlines {
             //logger.writeLog("Output: " + baseData);
             logger.writeLog(LogPrefix.LOGDATAOUTPUT + baseData);
             
-            String query = gdaltranslate + " -of GTiff " + fittedTif + " " + baseData;
+            String query = "\"" + gdaltranslate + "\" -of GTiff \"" 
+                    + fittedTif + "\" \"" + baseData + "\"";
             
             //logger.writeLog("Befehl: " + query);
             logger.writeLog(LogPrefix.LOGQUERY + query);
@@ -883,12 +965,19 @@ public class ModulContourlines {
             //logger.writeLog("Output: " + fittedTif);
             logger.writeLog(LogPrefix.LOGDATAOUTPUT + fittedTif);
             
-            String[] splittedRectangle = hConfig.getInputModel().getCoordRectangle().split(",");
-            String rectangle = splittedRectangle[0].trim() + " " + splittedRectangle[3].trim()
-                    + " " + splittedRectangle[2].trim() + " " + splittedRectangle[1].trim();
+            String query = "\"" + gdaltranslate + "\" ";
             
-            String query = gdaltranslate + " -projwin " + rectangle + " -of GTiff "
-                    + vrtRectangle + " " + fittedTif;
+            if(this.standalone) {
+                String[] splittedRectangle = hConfig.getInputModel().getCoordRectangle().split(",");
+                String rectangle = splittedRectangle[0].trim() + " " + splittedRectangle[3].trim()
+                        + " " + splittedRectangle[2].trim() + " " + splittedRectangle[1].trim();
+                
+                query += "-projwin " + rectangle + " ";
+            } 
+            
+            query += "-of GTiff \"" + vrtRectangle + "\" \"" + fittedTif + "\"";
+//            String query = gdaltranslate + " -projwin " + rectangle + " -of GTiff "
+//                    + vrtRectangle + " " + fittedTif;
             
             //logger.writeLog("Befehl: " + query);
             logger.writeLog(LogPrefix.LOGQUERY + query);
@@ -944,16 +1033,19 @@ public class ModulContourlines {
             
             vrtRectangle = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\output.vrt";
             
+            System.out.println(vrtRectangle);
+            
             //logger.writeLog("Output: " + vrtRectangle);
             logger.writeLog(LogPrefix.LOGDATAOUTPUT + vrtRectangle);
             
-            String query = gdalbuildvrt + " " + vrtRectangle + " ";
+            String query = "\"" + gdalbuildvrt + "\" \"" + vrtRectangle + "\" ";
             
             for (String kachel : kacheln) {
-                query += lidardataPath + "\\" + kachel + " ";
+                query += "\"" + lidardataPath + "\\" + kachel + "\" ";
             }
             
             //logger.writeLog("Befehl: " + query);
+            System.out.println(query);
             logger.writeLog(LogPrefix.LOGQUERY + query);
             
             Process process = Runtime.getRuntime().exec(query);
@@ -1004,28 +1096,41 @@ public class ModulContourlines {
         
         //logger.writeLog("Die Kachelnnamen werden bezogen.\n ----------------");
         logger.writeLog(LogPrefix.LOGINFO + "Die Kachelnnamen werden bezogen.");
-        
-        for (String kachelnr : arrKachelnr) {
-            String[] splittedKachelnr = kachelnr.split("_");
-            
-            if(splittedKachelnr.length == 2) {
-                String xcoord = splittedKachelnr[0];
-                String ycoord = splittedKachelnr[1];
-                
-                String filename = xcoord + "*_" + ycoord + "*_t.asc";
-                
-                scanner.setIncludes(new String[]{"**/" + filename});
-                scanner.setBasedir(lidardataPath);
-                scanner.setCaseSensitive(false);
-                scanner.scan();
-                String[] files = scanner.getIncludedFiles();
-                
-                this.kacheln.addAll(Arrays.asList(files));
-            } else {
-                //logger.writeLog("Eine Falsche Kachelnummer wurde registriert.");
-                logger.writeLog(LogPrefix.LOGERROR + "Eine Falsche Kachelnummer wurde registriert.");
-                return false;
+        if(this.standalone) {
+            for (String kachelnr : arrKachelnr) {
+                String[] splittedKachelnr = kachelnr.split("_");
+
+                if(splittedKachelnr.length == 2) {
+                    String xcoord = splittedKachelnr[0];
+                    String ycoord = splittedKachelnr[1];
+
+                    String filename = xcoord + "*_" + ycoord + "*_t.asc";
+
+                    scanner.setIncludes(new String[]{"**/" + filename});
+                    scanner.setBasedir(lidardataPath);
+                    scanner.setCaseSensitive(false);
+                    scanner.scan();
+                    String[] files = scanner.getIncludedFiles();
+
+                    this.kacheln.addAll(Arrays.asList(files));
+                } else {
+                    //logger.writeLog("Eine Falsche Kachelnummer wurde registriert.");
+                    logger.writeLog(LogPrefix.LOGERROR + "Eine Falsche Kachelnummer wurde registriert.");
+                    return false;
+                }
             }
+        } else {
+            String filename = "*.tif";
+            
+            System.out.println(lidardataPath);
+            
+            scanner.setIncludes(new String[]{"**/" + filename});
+            scanner.setBasedir(lidardataPath);
+            scanner.setCaseSensitive(false);
+            scanner.scan();
+            String[] files = scanner.getIncludedFiles();
+
+            this.kacheln.addAll(Arrays.asList(files));
         }
         
         if(kacheln.isEmpty()) {

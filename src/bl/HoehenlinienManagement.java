@@ -58,7 +58,7 @@ public class HoehenlinienManagement implements Runnable {
     @Override
     public void run() {
         this.statusGui.getBtnOrder().setDisable(true);
-        //this.statusGui.setProgress(-1);
+        this.statusGui.setProgress(-1);
         
         dbdal = this.factory.getDAL(this.logger);
         
@@ -84,26 +84,26 @@ public class HoehenlinienManagement implements Runnable {
                 this.logger.writeLog(LogPrefix.LOGERROR + "Bestellvorgang nicht erfolgreich abgeschlossen");
                 this.logger.writeErrorStatus("Bestellvorgang nicht erfolgreich");
                 
-                this.statusGui.getLblStatus().setText("Fehler beim Bestellen. Bitte Logfile kontrollieren.");
-                this.statusGui.getLblStatus().setVisible(true);
+                this.logger.writeErrorStatus("Bitte Logfile kontrollieren.");
+                //this.statusGui.getLblStatus().setVisible(true);
             }
         } else {
             this.logger.writeErrorStatus("Kachelnummern konnten nicht bezogen werden. "
                     + "Bitte kontrollieren Sie dass Logfile.");
             
-            this.statusGui.getLblStatus().setText("Fehler beim Bestellen. Bitte Logfile kontrollieren.");
-            this.statusGui.getLblStatus().setVisible(true);
+            //this.statusGui.getLblStatus().setText("Fehler beim Bestellen. Bitte Logfile kontrollieren.");
+            //this.statusGui.getLblStatus().setVisible(true);
         }
         
         this.logger.closeText();
         this.statusGui.getBtnFinish().setDisable(false);
-        
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                statusGui.setProgress(1);
-            }
-        });
+        this.statusGui.setProgress(1);
+//        Platform.runLater(new Runnable() {
+//            @Override
+//            public void run() {
+//                statusGui.setProgress(1);
+//            }
+//        });
     }
     
     /**

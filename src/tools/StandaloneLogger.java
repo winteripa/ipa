@@ -59,14 +59,16 @@ public class StandaloneLogger implements DisplayMethods {
 
     @Override
     public void writeStatus(String status) {
-        this.statusGui.getTxtStatus().appendText("Status: " + status + "\n");
+        //this.statusGui.getTxtStatus().appendText("Status: " + status + "\n");
+        this.statusGui.addStatusMessages("Status: " + status + "\n");
         
         System.out.println("Status: " + status);
     }
 
     @Override
     public void writeErrorStatus(String errStatus) {
-        this.statusGui.getTxtStatus().appendText("Error: " + errStatus + "\n");
+        //this.statusGui.getTxtStatus().appendText("Error: " + errStatus + "\n");
+        this.statusGui.addStatusMessages("Error: " + errStatus + "\n");
         
         System.out.println("Error: " + errStatus);
     }
