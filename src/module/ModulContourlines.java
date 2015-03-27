@@ -29,7 +29,7 @@ public class ModulContourlines {
     private static final String GRASSEXPORT = "grassexport";
     private static final String GRASSVECTORPATH = "glocation\\grassmapset\\vector";
     private static final String GRASSMAPSETDIR = "grassmapset";
-    private static final String CONTOURLINESSHPNAME = "contourlines";
+    private static String contourlinesshapename = "_contourlines";
     private boolean standalone;
     private HoehenlinienConfig hConfig = null;
     private DisplayMethods logger = null;
@@ -90,7 +90,7 @@ public class ModulContourlines {
         lidardataPath = hConfig.getInputModel().getLidardatapath().getAbsolutePath();
         gdalbuildvrt = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdalbuildvrt.exe";
         gdaltranslate = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdal_translate.exe";
-        
+        contourlinesshapename = hConfig.getInputModel().getOrderNumber() + contourlinesshapename;
         
         if(!generateBase()) {
             //logger.writeLog(errMsg);
@@ -221,7 +221,7 @@ public class ModulContourlines {
      */
     private boolean makeGrassShpExport(String inputToExport) {
         String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
-        String output = baseOutputDir + CONTOURLINESSHPNAME + ".shp";
+        String output = baseOutputDir + contourlinesshapename + ".shp";
         int errNumber = 0;
         HashMap<String, String> grassExportArgs = new HashMap<>();
         grassExportArgs.put("input", inputToExport);
@@ -235,15 +235,15 @@ public class ModulContourlines {
         this.logger.writeLog(LogPrefix.LOGINFO + "Das GRASS-Vektorshape wird in "
                 + "eine Vektorshape-Datei konvertiert.");
         
-        if(!fileTool.deleteExistingFile(baseOutputDir + CONTOURLINESSHPNAME + ".shp")) {
+        if(!fileTool.deleteExistingFile(baseOutputDir + contourlinesshapename + ".shp")) {
             errNumber += 1;
         }
         
-        if(!fileTool.deleteExistingFile(baseOutputDir + CONTOURLINESSHPNAME + ".shx")) {
+        if(!fileTool.deleteExistingFile(baseOutputDir + contourlinesshapename + ".shx")) {
             errNumber += 1;
         }
         
-        if(!fileTool.deleteExistingFile(baseOutputDir + CONTOURLINESSHPNAME + ".dbf")) {
+        if(!fileTool.deleteExistingFile(baseOutputDir + contourlinesshapename + ".dbf")) {
             errNumber += 1;
         }
         
@@ -657,7 +657,7 @@ public class ModulContourlines {
             logger.writeLog(LogPrefix.LOGINFO + "Höhenlinien werden aus dem Auschnitt erstellt");
             
             String source = baseData;
-            baseData = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\contourlines.shp";
+            baseData = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\" + contourlinesshapename + ".shp";
             
             if(!this.fileTool.deleteExistingFile(baseData)) {
 //                logger.writeLog("Es existiert eine alte 'contourlines.shp'-Datei. "
@@ -1173,9 +1173,9 @@ public class ModulContourlines {
     private boolean clearOutputDir() {
         String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
         String mapsetDir = baseOutputDir + GRASSMAPSETDIR;
-        String contourlinesDBF = baseOutputDir + CONTOURLINESSHPNAME + ".dbf";
-        String contourlinesSHX = baseOutputDir + CONTOURLINESSHPNAME + ".shx";
-        String contourlinesSHP = baseOutputDir + CONTOURLINESSHPNAME + ".shp";
+        String contourlinesDBF = baseOutputDir + contourlinesshapename + ".dbf";
+        String contourlinesSHX = baseOutputDir + contourlinesshapename + ".shx";
+        String contourlinesSHP = baseOutputDir + contourlinesshapename + ".shp";
         
         int errNumber = 0;
         

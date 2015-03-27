@@ -12,23 +12,23 @@
   <children>
     <Label fx:id="lblOrdercode" layoutX="38.0" layoutY="91.0" text="Bestellnummer" />
     <TextField fx:id="txtOrdercode" layoutX="162.0" layoutY="88.0" prefWidth="338.0" />
-    <Label fx:id="lblOrderCodeStatus" layoutX="519.0" layoutY="91.0" onMouseExited="#onOrderCodeExit" onMouseMoved="#onOrderCodeHover" prefWidth="216.0" text="Format: Zahl" />
+    <Label fx:id="lblOrderCodeStatus" layoutX="519.0" layoutY="91.0" onMouseExited="#onOrderCodeExit" onMouseMoved="#onOrderCodeHover" prefWidth="47.0" text="Format: Zahl" />
     <Label fx:id="lblKoordRectangle" layoutX="38.0" layoutY="127.0" text="Koordinatenrechteck" />
-    <Label fx:id="lblInputStatus" layoutX="519.0" layoutY="127.0" onMouseExited="#onInputExit" onMouseMoved="#onInputHover" prefWidth="216.0" text="Format: xmin, ymin, xmax, ymax" />
+    <Label fx:id="lblInputStatus" layoutX="519.0" layoutY="127.0" onMouseExited="#onInputExit" onMouseMoved="#onInputHover" prefWidth="47.0" text="Format: xmin, ymin, xmax, ymax" />
     <Label fx:id="lblOutput" layoutX="38.0" layoutY="160.0" text="Ausgabe" />
-    <Label fx:id="lblOutputStatus" layoutX="519.0" layoutY="160.0" onMouseExited="#onOutputExit" onMouseMoved="#onOutputHover" prefWidth="216.0" text="Pfad-Angabe" />
+    <Label fx:id="lblOutputStatus" layoutX="519.0" layoutY="160.0" onMouseExited="#onOutputExit" onMouseMoved="#onOutputHover" prefWidth="47.0" text="Pfad-Angabe" />
     <Label fx:id="lblAequi" layoutX="38.0" layoutY="196.0" text="Äquidistanz" />
-    <Label fx:id="lblAequiStatus" layoutX="519.0" layoutY="196.0" onMouseExited="#onAequiExit" onMouseMoved="#onAequiHover" prefWidth="216.0" text="Format: Zahl (max 100 m)" />
+    <Label fx:id="lblAequiStatus" layoutX="519.0" layoutY="196.0" onMouseExited="#onAequiExit" onMouseMoved="#onAequiHover" prefWidth="47.0" text="Format: Zahl (max 100 m)" />
     <Label fx:id="lblSmoothOptions" layoutX="38.0" layoutY="228.0" text="Smooth-Optionen" />
     <Label fx:id="lblThinning" layoutX="38.0" layoutY="257.0" text="Ausdünnen" />
     <Label fx:id="lbl3D" layoutX="38.0" layoutY="288.0" text="3D-Visualisierung" />
     <Label fx:id="lblLidar" layoutX="38.0" layoutY="319.0" text="Pfad LiDAR-Daten" />
     <Label fx:id="lblLog" layoutX="38.0" layoutY="352.0" text="Pfad Logdatei" />
-    <Label fx:id="lblSmoothStatus" layoutX="519.0" layoutY="228.0" onMouseExited="#onSmoothExit" onMouseMoved="#onSmoothHover" prefWidth="216.0" text="Auswahl" />
-    <Label fx:id="lblThinningStatus" layoutX="519.0" layoutY="257.0" onMouseExited="#onThinningExit" onMouseMoved="#onThinningHover" prefWidth="230.0" text="Format: Zahl (0 heisst keine Ausdünnung)" />
-    <Label fx:id="lbl3DStatus" layoutX="519.0" layoutY="288.0" onMouseExited="#on3DExit" onMouseMoved="#on3DHover" prefWidth="216.0" text="Ja oder Nein" />
-    <Label fx:id="lblLidarStatus" layoutX="519.0" layoutY="319.0" onMouseExited="#onLidarExit" onMouseMoved="#onLidarHover" prefWidth="216.0" text="LiDAR-Pfadangabe" />
-    <Label fx:id="lblLogStatus" layoutX="519.0" layoutY="352.0" onMouseExited="#onLogExit" onMouseMoved="#onLogHover" prefWidth="216.0" text="Logdatei-Pfadangabe" />
+    <Label fx:id="lblSmoothStatus" layoutX="519.0" layoutY="228.0" onMouseExited="#onSmoothExit" onMouseMoved="#onSmoothHover" prefWidth="47.0" text="Auswahl" />
+    <Label fx:id="lblThinningStatus" layoutX="519.0" layoutY="257.0" onMouseExited="#onThinningExit" onMouseMoved="#onThinningHover" prefWidth="47.0" text="Format: Zahl (0 heisst keine Ausdünnung)" />
+    <Label fx:id="lbl3DStatus" layoutX="519.0" layoutY="288.0" onMouseExited="#on3DExit" onMouseMoved="#on3DHover" prefWidth="47.0" text="Ja oder Nein" />
+    <Label fx:id="lblLidarStatus" layoutX="519.0" layoutY="319.0" onMouseExited="#onLidarExit" onMouseMoved="#onLidarHover" prefWidth="47.0" text="LiDAR-Pfadangabe" />
+    <Label fx:id="lblLogStatus" layoutX="519.0" layoutY="352.0" onMouseExited="#onLogExit" onMouseMoved="#onLogHover" prefWidth="47.0" text="Logdatei-Pfadangabe" />
     <Button fx:id="btnNext" layoutX="390.0" layoutY="401.0" mnemonicParsing="false" onMouseClicked="#onNextWindow" text="Nächstes Fenster" />
     <Label fx:id="mainTitle" layoutX="38.0" layoutY="27.0" text="mainTitle">
       <font>

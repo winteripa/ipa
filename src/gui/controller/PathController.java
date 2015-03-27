@@ -106,6 +106,7 @@ public class PathController implements Initializable {
     private FileTools fileTool;
     private Document configXML;
     private String xmlpath;
+    private String configPath;
     private ObservableList<Configuration> xmlConfigs;
     private boolean newConfig;
     @FXML
@@ -159,7 +160,9 @@ public class PathController implements Initializable {
         fileTool = new FileTools();
         xmlConfigs = FXCollections.observableArrayList();
         newConfig = false;
-        xmlpath = System.getProperty("user.dir") + "\\config\\config.xml";
+        configPath = System.getProperty("user.dir") + "\\config\\";
+        xmlpath = configPath + "config.xml";
+        this.checkConfigDir();
         System.out.println(xmlpath);
         configXML = fileTool.parseXMLFile(xmlpath);
         readConfigXML();
@@ -594,6 +597,13 @@ public class PathController implements Initializable {
             //log error
         } catch (TransformerFactoryConfigurationError ex) {
             //Log error
+        }
+    }
+    
+    private void checkConfigDir() {
+        fileTool.createDir(configPath);
+        if(!fileTool.doesFileExists(xmlpath)) {
+            fileTool.copyInsideFileToDisk("config.xml", configPath);
         }
     }
 

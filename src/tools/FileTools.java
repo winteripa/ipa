@@ -247,4 +247,14 @@ public class FileTools {
         
         return false;
     }
+    
+    public boolean createDir(String dirname) {
+        File dir = new File(dirname);
+        
+        if(dir.exists()) {
+            return true;
+        }
+        
+        return dir.mkdir();
+    }
 }

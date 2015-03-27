@@ -40,16 +40,16 @@
     <TextField fx:id="txtConfigName" layoutX="154.0" layoutY="124.0" prefWidth="352.0" />
     <TextField fx:id="txtPython" layoutX="154.0" layoutY="162.0" prefWidth="270.0" />
     <TextField fx:id="txtGdal" layoutX="154.0" layoutY="196.0" prefWidth="270.0" />
-    <Label fx:id="lblConfigStatus" layoutX="522.0" layoutY="94.0" onMouseExited="#onConfigExit" onMouseMoved="#onConfigHover" prefWidth="179.0" text="Auswahl oder neue Konfiguration" />
-    <Label fx:id="lblConfigNameStatus" layoutX="522.0" layoutY="127.0" onMouseExited="#onConfigNameExit" onMouseMoved="#onConfigNameHover" prefWidth="179.0" text="Eindeutiger Konfigurationsname" />
-    <Label fx:id="lblPythonStatus" layoutX="522.0" layoutY="165.0" onMouseExited="#onPythonExit" onMouseMoved="#onPythonHover" prefWidth="165.0" text="Python-Pfadangabe" />
-    <Label fx:id="lblGdalStatus" layoutX="522.0" layoutY="199.0" onMouseExited="#onGdalExit" onMouseMoved="#onGdalHover" prefWidth="179.0" text="GDAL-Pfadangabe" />
+    <Label fx:id="lblConfigStatus" layoutX="522.0" layoutY="94.0" onMouseExited="#onConfigExit" onMouseMoved="#onConfigHover" prefWidth="45.0" text="Auswahl oder neue Konfiguration" />
+    <Label fx:id="lblConfigNameStatus" layoutX="522.0" layoutY="127.0" onMouseExited="#onConfigNameExit" onMouseMoved="#onConfigNameHover" prefWidth="45.0" text="Eindeutiger Konfigurationsname" />
+    <Label fx:id="lblPythonStatus" layoutX="522.0" layoutY="165.0" onMouseExited="#onPythonExit" onMouseMoved="#onPythonHover" prefWidth="45.0" text="Python-Pfadangabe" />
+    <Label fx:id="lblGdalStatus" layoutX="522.0" layoutY="199.0" onMouseExited="#onGdalExit" onMouseMoved="#onGdalHover" prefWidth="45.0" text="GDAL-Pfadangabe" />
     <Label fx:id="lblGrass" layoutX="26.0" layoutY="232.0" text="GRASS-Pfad" />
     <TextField fx:id="txtGrass" layoutX="154.0" layoutY="229.0" prefWidth="270.0" />
-    <Label fx:id="lblGrassStatus" layoutX="522.0" layoutY="232.0" onMouseExited="#onGrassExit" onMouseMoved="#onGrassHover" prefWidth="179.0" text="GRASS-Pfadangabe" />
+    <Label fx:id="lblGrassStatus" layoutX="522.0" layoutY="232.0" onMouseExited="#onGrassExit" onMouseMoved="#onGrassHover" prefWidth="45.0" text="GRASS-Pfadangabe" />
     <Label fx:id="lblGrassBin" layoutX="26.0" layoutY="263.0" text="GRASS-BIN" />
     <TextField fx:id="txtGrassBin" layoutX="154.0" layoutY="260.0" prefWidth="270.0" />
-    <Label fx:id="lblGrassBinStatus" layoutX="522.0" layoutY="263.0" onMouseExited="#onGrassBinExit" onMouseMoved="#onGrassBinHover" prefWidth="179.0" text="GRASS-BIN-Pfadangabe" />
+    <Label fx:id="lblGrassBinStatus" layoutX="522.0" layoutY="263.0" onMouseExited="#onGrassBinExit" onMouseMoved="#onGrassBinHover" prefWidth="45.0" text="GRASS-BIN-Pfadangabe" />
     <Button fx:id="btnPython" layoutX="428.0" layoutY="162.0" mnemonicParsing="false" onMouseClicked="#onPythonChoose" prefWidth="78.0" text="Auswahl" />
     <Button fx:id="btnGdal" layoutX="428.0" layoutY="197.0" mnemonicParsing="false" onMouseClicked="#onGdalChoose" prefWidth="78.0" text="Auswahl" />
     <Button fx:id="btnGrass" layoutX="428.0" layoutY="230.0" mnemonicParsing="false" onMouseClicked="#onGrassChoose" prefWidth="78.0" text="Auswahl" />

@@ -66,6 +66,7 @@ public class Startclass {
         System.out.println(strMbr);
         
         hConfig.getInputModel().setCoordRectangle(strMbr);
+        hConfig.getInputModel().setOrderNumber(abrBL.getBestellnummer());
         hConfig.getInputModel().setAequidistance(numberTool.convertToInteger(extractedParams.get("aequi")));
         hConfig.getInputModel().setForce3D(Boolean.valueOf(extractedParams.get("force3d")));
         hConfig.getInputModel().setLidardatapath(new File(abrBL.getTranslatePath()));
