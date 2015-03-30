@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.tools.ant.DirectoryScanner;
 import tools.FileTools;
+import tools.FormatTools;
 
 /**
  * Modul-Klasse für die Erstellung der Höhenlinien
@@ -27,9 +28,14 @@ public class ModulContourlines {
     private static final String GRASSVECTORIMPORT = "vectorimport";
     private static final String GRASSSMOOTH = "grasssmooth";
     private static final String GRASSEXPORT = "grassexport";
+    private static final String GRASSTOPOINTS = "grasstopoints";
+    private static final String GRASSDELAUNAY = "grassdelaunay";
     private static final String GRASSVECTORPATH = "glocation\\grassmapset\\vector";
     private static final String GRASSMAPSETDIR = "grassmapset";
+    private static final double VISUALIZATIONORTHOFACTOR = 2;
+    private static final String VISUALIZATIONORTHONAME = "orthophoto";
     private static String contourlinesshapename = "_contourlines";
+    private static String visualizationFolder = "_visualisierung";
     private boolean standalone;
     private HoehenlinienConfig hConfig = null;
     private DisplayMethods logger = null;
@@ -44,10 +50,12 @@ public class ModulContourlines {
     private ArrayList<String> kacheln = null;
     private ArrayList<String> filesToDelete = null;
     private FileTools fileTool = null;
+    private FormatTools formatTool = null;
     private String grassGisrc = null;
     private String grassGisdbase = null;
     private String grassLocation = null;
     private String grassMapset = null;
+    private boolean smooth = false;
 
     /**
      * Konstruktor der Modul-Klasse
@@ -65,6 +73,7 @@ public class ModulContourlines {
         this.kacheln = new ArrayList<>();
         this.filesToDelete = new ArrayList<>();
         this.fileTool = new FileTools();
+        this.formatTool = new FormatTools();
     }
     
     /**
@@ -84,6 +93,7 @@ public class ModulContourlines {
         this.kacheln = new ArrayList<>();
         this.filesToDelete = new ArrayList<>();
         this.fileTool = new FileTools();
+        this.formatTool = new FormatTools();
     }
 
     public boolean prepareGenerateBase() {
@@ -91,6 +101,7 @@ public class ModulContourlines {
         gdalbuildvrt = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdalbuildvrt.exe";
         gdaltranslate = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdal_translate.exe";
         contourlinesshapename = hConfig.getInputModel().getOrderNumber() + contourlinesshapename;
+        visualizationFolder = hConfig.getInputModel().getOrderNumber() + visualizationFolder;
         
         if(!generateBase()) {
             //logger.writeLog(errMsg);
@@ -161,6 +172,8 @@ public class ModulContourlines {
                     if(this.initializeGrass()) {
                         if(this.makeGrassVectorImport()) {
                             if(hConfig.getInputModel().getSmooth() != null) {
+                                this.smooth = true;
+                                
                                 if(this.makeGrassSmooth()) {
                                     if(!this.makeGrassShpExport(GRASSSMOOTH)) {
                                         this.clearGrass();
@@ -178,6 +191,35 @@ public class ModulContourlines {
                                     return false;
                                 }
                             }
+                            
+                            if(hConfig.getInputModel().isForce3D()) {
+                                if(!makeVisualization3d()) {
+                                    this.clearGrass();
+                                    this.deleteOldFiles();
+
+                                    return false;
+                                } else {
+                                    String folderToZip = hConfig.getInputModel()
+                                            .getOutput().getAbsolutePath()
+                                            + "\\" + visualizationFolder;
+                                    String visualizationZip = folderToZip + ".zip";
+                                    
+                                    if(!fileTool.makeZip(folderToZip, visualizationZip)) {
+                                        this.fileTool.deleteExistingDir(folderToZip);
+                                        this.clearGrass();
+                                        this.deleteOldFiles();
+
+                                        logger.writeErrorStatus("Visualisierungs-Zipfile "
+                                                + "konnte nicht erstellt werden");
+                                        
+                                        return false;
+                                    } else {
+                                        this.fileTool.deleteExistingDir(folderToZip);
+                                        logger.writeStatus("Zipfile für die 3D-"
+                                                + "Visualisierung wurde erstellt");
+                                    }
+                                }
+                            }
                         } else {
                             this.clearGrass();
                             this.deleteOldFiles();
@@ -192,6 +234,8 @@ public class ModulContourlines {
                         logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus");
                         return false;
                     }
+                    
+                    //makeVisualization3d();
                 }
             }
         /*} else {
@@ -206,6 +250,437 @@ public class ModulContourlines {
         this.clearGrass();
         this.deleteOldFiles();
         return true;
+    }
+    
+    private boolean makeVisualization3d() {
+        String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
+        String visualizationPath = baseOutputDir + visualizationFolder;
+        String visualizationRes = visualizationPath + "\\res";
+        String visualizationLib = visualizationRes + "\\libs";
+        String visualizationImg = visualizationRes + "\\img";
+        String rectangle = hConfig.getInputModel().getCoordRectangle();
+        double orthophotoWidth = formatTool.getBoundaryWidth(rectangle) / VISUALIZATIONORTHOFACTOR;
+        double orthophotoHeight = formatTool.getBoundaryHeight(rectangle) / VISUALIZATIONORTHOFACTOR;
+        String orthophotoUrl = "http://geowms.bl.ch/"
+                + "?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&BBOX=" 
+                + formatTool.removeWhitespaceFromRectangle(rectangle)
+                + "&LAYERS=orthofotos_agi_2012&STYLES=&SRS=EPSG%3A2056&FORMAT=image%2Fpng"
+                + "&TRANSPARENT=TRUE&WIDTH=" + orthophotoWidth + ""
+                + "&HEIGHT=" + orthophotoHeight;
+        String orthophotoFile = visualizationImg + "\\" + VISUALIZATIONORTHONAME + ".png";
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das Verzeichnis für die Visualisierung "
+                + "wird erstellt.");
+        
+        if(!fileTool.createDir(visualizationPath)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das Verzeichnis für die Visualisierung "
+                + "konnte nicht erstellt.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das Ressourcen-Verzeichnis "
+                + "für die Visualisierung wird erstellt.");
+        
+        if(!fileTool.createDir(visualizationRes)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das Ressourcen-Verzeichnis "
+                + "für die Visualisierung konnte nicht erstellt.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das Bibliotheken-Verzeichnis "
+                + "für die Visualisierung wird erstellt.");
+        
+        if(!fileTool.createDir(visualizationLib)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das Bibliotheken-Verzeichnis "
+                + "für die Visualisierung konnte nicht erstellt.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das Bild-Verzeichnis "
+                + "für die Visualisierung wird erstellt.");
+        
+        if(!fileTool.createDir(visualizationImg)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das Bild-Verzeichnis "
+                + "für die Visualisierung konnte nicht erstellt.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das index.html wird in das "
+                + "Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("index.html", visualizationPath)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das index.html konnte "
+                    + "nicht in das Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das index.js wird in das "
+                + "Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("index.js", visualizationPath)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das index.js konnte "
+                    + "nicht in das Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das index.css wird in das "
+                + "Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("index.css", visualizationPath)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das index.css konnte "
+                    + "nicht in das Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das three.min.js wird in das "
+                + "Lib-Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("three.min.js", visualizationLib)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das three.min.js konnte "
+                    + "nicht in das Lib-Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das threex.fullscreen.js wird in das "
+                + "Lib-Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("threex.fullscreen.js", visualizationLib)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das threex.fullscreen.js konnte "
+                    + "nicht in das Lib-Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das threex.keyboardstate.js wird in das "
+                + "Lib-Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("threex.keyboardstate.js", visualizationLib)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das threex.keyboardstate.js konnte "
+                    + "nicht in das Lib-Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das threex.windowresize.js wird in das "
+                + "Lib-Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("threex.windowresize.js", visualizationLib)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das threex.windowresize.js konnte "
+                    + "nicht in das Lib-Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das jquery.min.js wird in das "
+                + "Lib-Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("jquery.min.js", visualizationLib)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das jquery.min.js konnte "
+                    + "nicht in das Lib-Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das jquery-migrate.min.js wird in das "
+                + "Lib-Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("jquery-migrate.min.js", visualizationLib)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das jquery-migrate.min.js konnte "
+                    + "nicht in das Lib-Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das Detector.js wird in das "
+                + "Lib-Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("Detector.js", visualizationLib)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das Detector.js konnte "
+                    + "nicht in das Lib-Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das OrbitControls.js wird in das "
+                + "Lib-Verzeichnis kopiert.");
+        
+        if(!fileTool.copyInsideFileToDisk("OrbitControls.js", visualizationLib)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das OrbitControls.js konnte "
+                    + "nicht in das Lib-Verzeichnis kopiert werden.");
+            
+            return false;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das Orthophoto wird von GeoWMS BL "
+                + "bezogen und im Bild-Verzeichnis gespeichert.");
+        this.logger.writeLog(LogPrefix.LOGINFO + "URL: " + orthophotoUrl);
+        
+        if(!fileTool.saveImgFromUrl(orthophotoUrl, orthophotoFile)){
+            this.logger.writeLog(LogPrefix.LOGERROR + "Das Orthophoto konnte nicht "
+                    + "von GeoWMS BL bezogen und abgespeichert werden. Überprüfen Sie "
+                    + "bitte die URL. Sie könnte fehlerhafte Anweisungen an den WMS-Dienst "
+                    + "schicken.");
+            
+            return false;
+        }
+        
+        //return true;
+        if(makeGrassLineGeoJsonExport()) {
+            if(makeGrassLineToPoints()) {
+                if(makeGrassDelaunayTriangulation()) {
+                    if(!makeGrassTinGeoJsonExport()) {
+                        this.logger.writeLog(LogPrefix.LOGERROR + "Der Export "
+                                + "der triangulierten Punke war nicht erfolgreich. "
+                                + "Bitte kontrollieren Sie, "
+                                + "ob der GRASS-Befehl richtig ist.");
+            
+                        this.logger.writeErrorStatus("Fehler bei der Zusammenstellung der Daten "
+                                + "für die 3D-Visualisierung");
+
+                        return false;
+                    }
+                } else {
+                    this.logger.writeLog(LogPrefix.LOGERROR + "Die Triangulation "
+                            + "konnte nicht durchgeführt werden. Bitte kontrollieren Sie, "
+                            + "ob der GRASS-Befehl richtig ist.");
+            
+                    this.logger.writeErrorStatus("Fehler bei der Zusammenstellung der Daten "
+                            + "für die 3D-Visualisierung");
+
+                    return false;
+                }
+            } else {
+                this.logger.writeLog(LogPrefix.LOGERROR + "Die Punkte konnten nicht "
+                        + "auf die Höhenlinien gerechnet werden. Bitte kontrollieren Sie, "
+                        + "ob der GRASS-Befehl richtig ist.");
+            
+                this.logger.writeErrorStatus("Fehler bei der Zusammenstellung der Daten "
+                        + "für die 3D-Visualisierung");
+
+                return false;
+            }
+        } else {
+            this.logger.writeLog(LogPrefix.LOGERROR + "Der Höhenlinien-Datensatz "
+                    + "konnte für die 3D-Visualisierung exportiert werden.");
+            
+            this.logger.writeErrorStatus("Fehler bei der Zusammenstellung der Daten "
+                    + "für die 3D-Visualisierung");
+            
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private boolean makeGrassTinGeoJsonExport() {
+        String visualizationRes = hConfig.getInputModel().getOutput().getAbsolutePath() 
+                + "\\" + visualizationFolder + "\\res\\";
+        String outputName = contourlinesshapename.split("_")[1] + "_tin";
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die triangulierten Höhenlinien-Punkte "
+                + "werden für die Visualisierung in eine GeoJSON-Datei exportiert");
+        
+        return this.makeGrassGeoJsonExport(GRASSDELAUNAY, "area", visualizationRes, outputName);
+    }
+    
+    private boolean makeGrassLineGeoJsonExport() {
+        String visualizationRes = hConfig.getInputModel().getOutput().getAbsolutePath() 
+                + "\\" + visualizationFolder + "\\res\\";
+        String outputName = contourlinesshapename.split("_")[1];
+        String input = GRASSVECTORIMPORT;
+        
+        if(smooth) {
+            input = GRASSSMOOTH;
+        }
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Der Höhenlinien-Datensatz wird für "
+                + "die Visualisierung in eine GeoJSON-Datei exportiert");
+        
+        return this.makeGrassGeoJsonExport(input, "line", visualizationRes, outputName);
+    }
+    
+    private boolean makeGrassGeoJsonExport(String inputToExport, String type, 
+            String outDir, String outName) {
+        String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
+        String output = outDir + outName + ".json";
+        HashMap<String, String> grassExportArgs = new HashMap<>();
+        grassExportArgs.put("input", inputToExport);
+        grassExportArgs.put("type", type);
+        grassExportArgs.put("layer", "1");
+        grassExportArgs.put("format", "GeoJSON");
+        grassExportArgs.put("output", output);
+        grassExportArgs.put("olayer", "default");
+        grassExportArgs.put("flags", "ecz");
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Das GRASS-Vektorshape wird in "
+                + "eine GeoJSON-Datei für die Visualisierung konvertiert");
+        
+        if(this.writeGrassExportBatch(grassExportArgs)) {
+            
+            this.logger.writeLog(LogPrefix.LOGINFO + "Die Python-Datei wird in das "
+                    + "Zielverzeichnis kopiert");
+            
+            if(fileTool.copyInsideFileToDisk(GRASSEXPORT + ".py", baseOutputDir)) {
+                try {
+                    this.logger.writeLog(LogPrefix.LOGINFO + "Beginn des Exports");
+                    
+                    String query = "cmd /c \"" + baseOutputDir
+                            + GRASSEXPORT + ".bat\"";
+                    
+                    Process process = Runtime.getRuntime().exec(query);
+                    
+                    process.waitFor();
+                    
+                    Thread.sleep(3000);
+                    
+                    String errMsg = "Fehler beim Exportieren der GeoJSON-Datei "
+                            + "für die 3D-Visualisierung";
+                    
+                    if(this.doesResultExits(output, errMsg)) {
+                        this.filesToDelete.add(baseOutputDir + GRASSEXPORT + ".bat");
+                        this.filesToDelete.add(baseOutputDir + GRASSEXPORT + ".py");
+                        
+                        this.logger.writeLog(LogPrefix.LOGINFO + "Der Export der "
+                                + "GeoJSON-Datei war erfolgreich.");
+                        
+                        return true;
+                    }
+                } catch (IOException ex) {
+                    //Log error
+                } catch (InterruptedException ex) {
+                    //Log error
+                }
+            } else {
+                this.logger.writeLog(LogPrefix.LOGERROR + "Die Python-Datei konnte "
+                        + "nicht erfolgreich in das Zielverzeichnis kopiert werden");
+            }
+        }
+        
+        return false;
+    }
+    
+    private boolean makeGrassDelaunayTriangulation() {
+        String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
+        HashMap<String, String> grassDelaunayArgs = new HashMap<>();
+        grassDelaunayArgs.put("input", GRASSTOPOINTS);
+        grassDelaunayArgs.put("output", GRASSDELAUNAY);
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die Punkte auf den Höhenlinien "
+                + "werden durch den Delaunay-Algorithmus miteinander trianguliert");
+        
+        if(this.writeDelaunayBatch(grassDelaunayArgs)) {
+            
+            this.logger.writeLog(LogPrefix.LOGINFO + "Die Python-Datei wird in das "
+                    + "Zielverzeichnis kopiert");
+            
+            if(fileTool.copyInsideFileToDisk(GRASSDELAUNAY + ".py", baseOutputDir)) {
+                try {
+                    this.logger.writeLog(LogPrefix.LOGINFO + "Beginn der Triangulation");
+                    
+                    String query = "cmd /c \"" + baseOutputDir
+                            + GRASSDELAUNAY + ".bat\"";
+                    
+                    Process process = Runtime.getRuntime().exec(query);
+                    
+                    process.waitFor();
+                    
+                    String output = this.grassGisdbase + "\\" + GRASSVECTORPATH + "\\"
+                            + GRASSDELAUNAY;
+                    
+                    String errMsg = "Fehler beim Triangulieren";
+                    
+                    if(this.doesResultExits(output, errMsg)) {
+                        this.filesToDelete.add(baseOutputDir + GRASSDELAUNAY + ".bat");
+                        this.filesToDelete.add(baseOutputDir + GRASSDELAUNAY + ".py");
+                        
+                        this.logger.writeLog(LogPrefix.LOGINFO + "Das Rechnen "
+                                + "der Punkte war erfolgreich");
+                        
+                        return true;
+                    }
+                } catch (IOException ex) {
+                    //Log error
+                } catch (InterruptedException ex) {
+                    //Log error
+                }
+            } else {
+                this.logger.writeLog(LogPrefix.LOGERROR + "Die Python-Datei konnte "
+                        + "nicht erfolgreich in das Zielverzeichnis kopiert werden");
+            }
+        }
+        
+        return false;
+    }
+    
+    private boolean makeGrassLineToPoints() {
+        String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
+        HashMap<String, String> grassToPointsArgs = new HashMap<>();
+        String input = GRASSVECTORIMPORT;
+        
+        if(smooth) {
+            input = GRASSSMOOTH;
+        }
+        
+        grassToPointsArgs.put("input", input);
+        grassToPointsArgs.put("type", "line");
+        grassToPointsArgs.put("llayer", "1");
+        grassToPointsArgs.put("output", GRASSTOPOINTS);
+        grassToPointsArgs.put("dmax", "10");
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Punkte werden auf die Höhenlinien "
+                + "gerechnet, als Vorbereitung für die Triangulation.");
+        
+        if(this.writeLineToPointsBatch(grassToPointsArgs)) {
+            
+            this.logger.writeLog(LogPrefix.LOGINFO + "Die Python-Datei wird in das "
+                    + "Zielverzeichnis kopiert");
+            
+            if(fileTool.copyInsideFileToDisk(GRASSTOPOINTS + ".py", baseOutputDir)) {
+                try {
+                    this.logger.writeLog(LogPrefix.LOGINFO + "Beginn des Punkterechnens");
+                    
+                    String query = "cmd /c \"" + baseOutputDir
+                            + GRASSTOPOINTS + ".bat\"";
+                    
+                    Process process = Runtime.getRuntime().exec(query);
+                    
+                    process.waitFor();
+                    
+                    String output = this.grassGisdbase + "\\" + GRASSVECTORPATH + "\\"
+                            + GRASSTOPOINTS;
+                    
+                    String errMsg = "Fehler beim Rechnen der Punkte auf die "
+                            + "Höhenlinien.";
+                    
+                    if(this.doesResultExits(output, errMsg)) {
+                        this.filesToDelete.add(baseOutputDir + GRASSTOPOINTS + ".bat");
+                        this.filesToDelete.add(baseOutputDir + GRASSTOPOINTS + ".py");
+                        
+                        this.logger.writeLog(LogPrefix.LOGINFO + "Das Rechnen "
+                                + "der Punkte war erfolgreich");
+                        
+                        return true;
+                    }
+                } catch (IOException ex) {
+                    //Log error
+                } catch (InterruptedException ex) {
+                    //Log error
+                }
+            } else {
+                this.logger.writeLog(LogPrefix.LOGERROR + "Die Python-Datei konnte "
+                        + "nicht erfolgreich in das Zielverzeichnis kopiert werden");
+            }
+        }
+        
+        return false;
     }
     
     /**
@@ -489,6 +964,35 @@ public class ModulContourlines {
         }
         
         return false;
+    }
+    
+    private boolean writeDelaunayBatch(HashMap<String, String> args) {
+        String batchname = GRASSDELAUNAY + ".bat";
+        String pythonmodule = GRASSDELAUNAY + ".py";
+        ArrayList<String> properArgs = new ArrayList<>();
+        properArgs.add(args.get("input"));
+        properArgs.add(args.get("output"));
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die Batch-Datei wird in das "
+                + "Zielverzeichnis kopiert");
+        
+        return this.writeGrassBatch(batchname, pythonmodule, properArgs);
+    }
+    
+    private boolean writeLineToPointsBatch(HashMap<String, String> args) {
+        String batchname = GRASSTOPOINTS + ".bat";
+        String pythonmodule = GRASSTOPOINTS + ".py";
+        ArrayList<String> properArgs = new ArrayList<>();
+        properArgs.add(args.get("input"));
+        properArgs.add(args.get("type"));
+        properArgs.add(args.get("llayer"));
+        properArgs.add(args.get("output"));
+        properArgs.add(args.get("dmax"));
+        
+        this.logger.writeLog(LogPrefix.LOGINFO + "Die Batch-Datei wird in das "
+                + "Zielverzeichnis kopiert");
+        
+        return this.writeGrassBatch(batchname, pythonmodule, properArgs);
     }
     
     private boolean writeGrassExportBatch(HashMap<String, String> args) {
@@ -1106,7 +1610,7 @@ public class ModulContourlines {
 
                     String filename = xcoord + "*_" + ycoord + "*_t.asc";
 
-                    scanner.setIncludes(new String[]{"**/" + filename});
+                    scanner.setIncludes(new String[]{filename});
                     scanner.setBasedir(lidardataPath);
                     scanner.setCaseSensitive(false);
                     scanner.scan();
@@ -1124,7 +1628,7 @@ public class ModulContourlines {
             
             System.out.println(lidardataPath);
             
-            scanner.setIncludes(new String[]{"**/" + filename});
+            scanner.setIncludes(new String[]{filename});
             scanner.setBasedir(lidardataPath);
             scanner.setCaseSensitive(false);
             scanner.scan();

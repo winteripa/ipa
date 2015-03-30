@@ -42,8 +42,11 @@ public class StandaloneLogger implements DisplayMethods {
     public void writeLog(String logMessage) {
         if(orderNumber != null && logPath != null) {
             this.logTimePrefix = timeTool.getCurrTime() + ";";
+            
+            String messageContent = logMessage.replace("\n", "");
+            
             String logfilename = logPath + "\\" + orderNumber + "_logfile_" + timestamp + ".log";
-            fileTool.writeLogfile(logfilename, logDatePrefix + logTimePrefix + logMessage);
+            fileTool.writeLogfile(logfilename, logDatePrefix + logTimePrefix + messageContent);
         } else {
             this.writeStatus(logMessage);
         }

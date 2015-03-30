@@ -148,4 +148,37 @@ public class FormatTools {
         
         return extractedParams;
     }
+    
+    public double getBoundaryWidth(String inputRectangle) {
+        String[] splittedInput = inputRectangle.split(",");
+        
+        double xOne = Double.parseDouble(splittedInput[0].trim());
+        double xTwo = Double.parseDouble(splittedInput[2].trim());
+        
+        return this.getEdgeLength(xOne, xTwo);
+    }
+    
+    public double getBoundaryHeight(String inputRectangle) {
+        String[] splittedInput = inputRectangle.split(",");
+        
+        double yOne = Double.parseDouble(splittedInput[1].trim());
+        double yTwo = Double.parseDouble(splittedInput[3].trim());
+        
+        return this.getEdgeLength(yOne, yTwo);
+    }
+    
+    private double getEdgeLength(double coordOne, double coordTwo) {
+        double length = Math.abs(coordTwo - coordOne);
+        
+        return length;
+    }
+    
+    public String removeWhitespaceFromRectangle(String rectangle) {
+        String[] splittedRectangle = rectangle.split(",");
+        String properRectangle = splittedRectangle[0].trim() + "," 
+                + splittedRectangle[1].trim() + "," + splittedRectangle[2].trim()
+                + "," + splittedRectangle[3].trim();
+        
+        return properRectangle;
+    }
 }

@@ -6,18 +6,22 @@
 
 package tools;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -32,6 +36,8 @@ import org.xml.sax.SAXException;
  */
 public class FileTools {
 
+    private ArrayList<String> filesToZip = null;
+    
     /**
      * Methode für das parsen einer XML-Datei
      * @param path Pfad zur XML-Datei
@@ -256,5 +262,87 @@ public class FileTools {
         }
         
         return dir.mkdir();
+    }
+    
+    public boolean saveImgFromUrl(String strUrl, String outputFile) {
+        BufferedImage img = null;
+
+        try {
+            URL url = new URL(strUrl);
+
+            img = ImageIO.read(url);
+
+            if(img == null) {
+                //Es wird kein Bild zurückgegeben, sondern eine Logdatei 
+                //mit WMS-Fehlermeldungen
+                return false;
+            }
+            
+            ImageIO.write(img, "png", new File(outputFile));
+
+            if(this.doesFileExists(outputFile)) {
+                return true;
+            }
+        } catch(IOException ex) {
+            //Log error
+        }
+        
+        return false;
+    }
+    
+    public boolean makeZip(String folderToZip, String zipfile) {
+        this.filesToZip = new ArrayList<>();
+        this.addFilesToZip(new File(folderToZip), folderToZip);
+        
+        byte[] buffer = new byte[1024];
+        
+        try {
+            FileOutputStream fileOutStream = new FileOutputStream(zipfile);
+            ZipOutputStream zipOutStream = new ZipOutputStream(fileOutStream);
+            
+            for (String fileToZip : this.filesToZip) {
+                ZipEntry zEntry = new ZipEntry(fileToZip);
+                zipOutStream.putNextEntry(zEntry);
+                
+                FileInputStream fileInStream = new FileInputStream(folderToZip + "\\"
+                        + fileToZip);
+                
+                int filelen;
+                while((filelen = fileInStream.read(buffer)) > 0) {
+                    zipOutStream.write(buffer, 0, filelen);
+                }
+                
+                fileInStream.close();
+            }
+            zipOutStream.closeEntry();
+            zipOutStream.close();
+            
+            if(this.doesFileExists(zipfile)) {
+                return true;
+            }
+        } catch (IOException e) {
+            //Log error
+        }
+        
+        return false;
+    }
+    
+    private void addFilesToZip(File currDir, String source) {
+        if(this.filesToZip != null) {
+            if(currDir.isFile()) {
+                this.filesToZip.add(getZipPath(currDir.getAbsoluteFile().toString(), source));
+            }
+
+            if(currDir.isDirectory()) {
+                String[] subDirs = currDir.list();
+                for (String subDir : subDirs) {
+                    addFilesToZip(new File(currDir, subDir), source);
+                }
+            }
+        }
+    }
+    
+    private String getZipPath(String absFile, String source) {
+        return absFile.substring(source.length()+1, absFile.length());
     }
 }
