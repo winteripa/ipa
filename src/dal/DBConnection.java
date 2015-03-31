@@ -25,7 +25,9 @@ public class DBConnection {
     private static String dbtype = "postgresql";
     
     /**
-     * Private-deklarierter Konstruktor für das Singleton-Entwurfsmuster
+     * Private-deklarierter Konstruktor für das Singleton-Entwurfsmuster.
+     * Der Konstruktor muss private deklariert sein, damit kein Objekt der 
+     * Klasse DBConnection von aussen erstellt werden kann.
      */
     private DBConnection() {
     }

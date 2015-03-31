@@ -14,15 +14,11 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -113,13 +109,16 @@ public class InputController implements Initializable {
     private InputModel inputModel;
 
     /**
-     * Initialisierungsmethode für den InputController
-     * @param url
-     * @param rb
+     * Initialisierungsmethode des InputControllers.
+     * Initialisiert Eingabefelder und setzt die Tooltip-Hilfestellungen.
+     * Falls Konfigurationen schon gemacht wurden und der Zurück-Button im vorherigen 
+     * Fenster geklickt wurde, so werden die Eingaben direkt in die Eingabefelder 
+     * gesetzt.
+     * @param url JavaFX-URL
+     * @param rb JavaFX Resource Bundle
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
         mainController = MainController.getMainController(null);
         
         cbSmooth.getItems().clear();
@@ -130,6 +129,38 @@ public class InputController implements Initializable {
         mainTitle.setText("Höhenlinien bestellen");
         subTitle.setText("Steuerungsparameter eingeben");
         lblStatus.setVisible(false);
+        
+        if(mainController.getHoehenlinienConfig().getInputModel().isForce3D() != null) {
+            ck3D.setSelected(mainController.getHoehenlinienConfig().getInputModel().isForce3D());
+        }
+        
+        if(mainController.getHoehenlinienConfig().getInputModel().getAequidistance() != null) {
+            txtAequi.setText(mainController.getHoehenlinienConfig().getInputModel().getAequidistance().toString());
+        }
+        
+        if(mainController.getHoehenlinienConfig().getInputModel().getCoordRectangle() != null) {
+            txtInput.setText(mainController.getHoehenlinienConfig().getInputModel().getCoordRectangle());
+        }
+        
+        if(mainController.getHoehenlinienConfig().getInputModel().getLidardatapath() != null) {
+            txtLidar.setText(mainController.getHoehenlinienConfig().getInputModel().getLidardatapath().getAbsolutePath());
+        }
+        
+        if(mainController.getHoehenlinienConfig().getInputModel().getLogdir() != null) {
+            txtLog.setText(mainController.getHoehenlinienConfig().getInputModel().getLogdir().getAbsolutePath());
+        }
+        
+        if(mainController.getHoehenlinienConfig().getInputModel().getOutput() != null) {
+            txtOutput.setText(mainController.getHoehenlinienConfig().getInputModel().getOutput().getAbsolutePath());
+        }
+        
+        if(mainController.getHoehenlinienConfig().getInputModel().getSmooth() != null) {
+            cbSmooth.setValue(mainController.getHoehenlinienConfig().getInputModel().getSmooth());
+        }
+        
+        if(mainController.getHoehenlinienConfig().getInputModel().getThinning() != null) {
+            txtThinning.setText(mainController.getHoehenlinienConfig().getInputModel().getThinning().toString());
+        }
         
         lbl3DStatus.setText("");
         lblAequiStatus.setText("");
@@ -172,8 +203,10 @@ public class InputController implements Initializable {
     }
 
     /**
-     * Methode, welche das nächste Fenster anzeigen soll und die eingegebenen 
-     * Werte kontrolliert und anschliessend der Höhenlinienkonfiguration hinzufügt.
+     * Methode zum Anzeigen des nächsten Fensters.
+     * Alle Werte werden kontrolliert und anschliessend in das zentrale 
+     * HohenlinienConfig-Objekt gespeichert. Anschliessend werden alle Eingaben 
+     * in das Logfile geschrieben und das Pfad-Konfigurations-Fenster wird angezeigt.
      * @param event Click-Event
      */
     @FXML
@@ -295,6 +328,9 @@ public class InputController implements Initializable {
     
     /**
      * Methode, welche überprüft, ob alle Eingabeparameter korrekt sind.
+     * Alle Eingabeparameter werden überprüft. Falls ein Fehler bemerkt wurde, 
+     * wird das Fragezeichen-Icon im Fenster in ein Ausrufezeichen-Icon umgewandelt, 
+     * um dem Benutzer mitzuteilen, dass etwas schief gelaufen ist.
      * @return Validierungsstatus
      */
     private boolean checkValues(){
@@ -382,7 +418,7 @@ public class InputController implements Initializable {
     }
     
     /**
-     * Methode, welches die Farbe eines Labels in Rot ändert
+     * Methode, welches die Farbe eines Labels in Rot ändert.
      * @param lbl Label
      */
     private void changeStatus(Label lbl) {
@@ -390,18 +426,9 @@ public class InputController implements Initializable {
     }
     
     /**
-     * Methode zum Zurücksetzen der Label-Farben
+     * Methode zum die Fehlermeldung im Kopfbereich verschwinden zu lassen.
      */
     private void resetStatusColors() {
-        /*lbl3DStatus.setTextFill(Color.web("#000000"));
-        lblAequiStatus.setTextFill(Color.web("#000000"));
-        lblInputStatus.setTextFill(Color.web("#000000"));
-        lblLidarStatus.setTextFill(Color.web("#000000"));
-        lblLogStatus.setTextFill(Color.web("#000000"));
-        lblOrderCodeStatus.setTextFill(Color.web("#000000"));
-        lblOutputStatus.setTextFill(Color.web("#000000"));
-        lblSmoothStatus.setTextFill(Color.web("#000000"));
-        lblThinningStatus.setTextFill(Color.web("#000000"));*/
         lblStatus.setVisible(false);
     }
 

@@ -13,7 +13,7 @@ package tools;
 public class NumberTools {
     
     /**
-     * Methode zur Überprüfung einer Zahl in Form eines Strings
+     * Methode zur Überprüfung einer Zahl in Form eines Strings.
      * @param numVal Zahl im Stringformat
      * @return Validierungsstatus
      */
@@ -28,7 +28,7 @@ public class NumberTools {
     }
     
     /**
-     * Methode zur Umwandlung eines Strings in eine Ganzzahl
+     * Methode zur Umwandlung eines Strings in eine Ganzzahl.
      * @param numVal Zahl im Stringformat
      * @return Zahl
      */

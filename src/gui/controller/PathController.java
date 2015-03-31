@@ -12,7 +12,6 @@ import bo.LogPrefix;
 import bo.PathModel;
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -23,7 +22,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
@@ -113,14 +111,15 @@ public class PathController implements Initializable {
     private Button btnBack;
     
     /**
-     * Initialisierungsmethode des PathControllers. Das Konfigurations-XML wird 
-     * eingelesen und die Elemente werden der Combobox hinzugefügt.
-     * @param url
-     * @param rb
+     * Initialisierungsmethode des PathControllers. 
+     * Initialisiert Eingabefelder und setzt die Tooltip-Hilfestellungen. 
+     * Ausserdem wird die XML-Datei mit den Pfad-Konfigurationen der Bibliotheken, 
+     * wie GDAL, etc. 
+     * @param url JavaFX-URL
+     * @param rb JavaFX Resource Bundle
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
         mainController = MainController.getMainController(null);
         
         cbConfig.getItems().clear();
@@ -170,8 +169,10 @@ public class PathController implements Initializable {
     }    
 
     /**
-     * Methode, welches das nächste Fenster anzeigen soll. Alle Konfigurationspfade 
-     * werden kontrolliert und der Höhenlinienkonfiguration hinzugefügt.
+     * Methode zum Anzeigen des nächsten Fensters.
+     * Alle Werte werden kontrolliert und anschliessend in das zentrale 
+     * HohenlinienConfig-Objekt gespeichert. Anschliessend werden alle Eingaben 
+     * in das Logfile geschrieben und das Status-Fenster wird angezeigt.
      * @param event Click-Event
      */
     @FXML
@@ -224,6 +225,7 @@ public class PathController implements Initializable {
 
     /**
      * Methode, welche ermöglicht eine neue Konfiguration zu erfassen.
+     * Alle Eingabefelder werden freigegeben, damit Text eingefüllt werden kann.
      * @param event Click-Event
      */
     @FXML
@@ -305,6 +307,7 @@ public class PathController implements Initializable {
     
     /**
      * Methode, welche Änderungen nach der Auswahl einer neuen Konfiguration ausführt.
+     * Die Eingabefelder werden mit den Werten der jeweiligen Konfiguration befüllt.
      * @param event Click-Event
      */
     @FXML
@@ -319,7 +322,10 @@ public class PathController implements Initializable {
     }
     
     /**
-     * Methode, welche das Konfiguration-XML einliest
+     * Methode, welche das Konfiguration-XML einliest.
+     * Alle Konfigurationen werden aus der XML-Datei eingelesen und in Objekten 
+     * der Klasse Configuration abgespeichert und anschliessend der Auswahlbox 
+     * hinzugefügt.
      */
     private void readConfigXML() {
         System.out.println(configXML.getDocumentElement().getNodeName());
@@ -385,7 +391,10 @@ public class PathController implements Initializable {
     }
     
     /**
-     * Methode zur Überprüfung der Konfigurationspfade
+     * Methode, welche überprüft, ob alle Eingabeparameter korrekt sind.
+     * Alle Eingabeparameter werden überprüft. Falls ein Fehler bemerkt wurde, 
+     * wird das Fragezeichen-Icon im Fenster in ein Ausrufezeichen-Icon umgewandelt, 
+     * um dem Benutzer mitzuteilen, dass etwas schief gelaufen ist.
      * @return Validierungsstatus
      */
     private boolean checkValues() {
@@ -451,7 +460,7 @@ public class PathController implements Initializable {
     }
     
     /**
-     * Methode, welches die Farbe eines Labels in Rot ändert
+     * Methode, welches die Farbe eines Labels in Rot ändert.
      * @param lbl Label
      */
     private void changeStatus(Label lbl) {
@@ -459,20 +468,16 @@ public class PathController implements Initializable {
     }
     
     /**
-     * Methode zum Zurücksetzen der Label-Farben
+     * Methode zum die Fehlermeldung im Kopfbereich verschwinden zu lassen.
      */
     private void resetStatusColors() {
-        /*lblConfigStatus.setTextFill(Color.web("#000000"));
-        lblConfigNameStatus.setTextFill(Color.web("#000000"));
-        lblPythonStatus.setTextFill(Color.web("#000000"));
-        lblGdalStatus.setTextFill(Color.web("#000000"));
-        lblGrassStatus.setTextFill(Color.web("#000000"));
-        lblGrassBinStatus.setTextFill(Color.web("#000000"));*/
         lblStatus.setVisible(false);
     }
     
     /**
-     * Methode zur Speicherung einer neuen Konfiguration
+     * Methode zur Speicherung einer neuen Konfiguration.
+     * Die Konfigurationen werden aus den Eingabefeldern ausgelesen und 
+     * in die XML-Datei geschrieben.
      */
     private void saveNewConfig() {
         Element rootElement = configXML.getDocumentElement();
@@ -507,6 +512,8 @@ public class PathController implements Initializable {
     
     /**
      * Methode zur Überprüfung, ob eine vorhandene Konfiguration editiert wurde.
+     * Falls eine schon im XML vorhandene Konfiguration angepasst wurde, so 
+     * meldet diese Methode dies.
      * @return Modifizierungsstatus
      */
     private boolean isModifiedConfig() {
@@ -542,6 +549,9 @@ public class PathController implements Initializable {
     
     /**
      * Methode, welche eine modifizierte Konfiguration in die XML-Datei speichert.
+     * Die Konfigurationen werden aus den Eingabefeldern ausgelesen. Die modifizierte 
+     * Konfiguration wird ermittelt und anschliessend werden die alten Konfiugrationen 
+     * mit den Neuen ersetzt.
      */
     private void saveModifiedConfig() {
         if(isModifiedConfig()) {
@@ -569,22 +579,14 @@ public class PathController implements Initializable {
                     }
                 }
 
-                /*TransformerFactory tf = TransformerFactory.newInstance();
-                Transformer transformer = tf.newTransformer();
-                DOMSource source = new DOMSource(configXML);
-                StreamResult result = new StreamResult(new File(xmlpath));
-                transformer.transform(source, result);*/
                 transformXML();
-            /*} catch(TransformerException e) {
-                //Log error
-            } catch(TransformerFactoryConfigurationError e){
-                //Log error
-            }*/
         }
     }
     
     /**
-     * Methode, welche eine XML-Datei nach dem Editieren transformiert
+     * Methode zur Anpassung der Konfigurations-XML-Datei.
+     * Sind Änderungen für das XML vorhanden, so müssen sie mit dieser Methode 
+     * in das XML geschrieben werden.
      */
     private void transformXML() {
         try {
@@ -600,6 +602,11 @@ public class PathController implements Initializable {
         }
     }
     
+    /**
+     * Methode zum Checken der Existenz der Konfigurations-Datei.
+     * Diese Methode erstellt eine neue Konfigurations-Datei, falls keine auf 
+     * dem Dateisystem vorhanden sein sollte.
+     */
     private void checkConfigDir() {
         fileTool.createDir(configPath);
         if(!fileTool.doesFileExists(xmlpath)) {
@@ -608,7 +615,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Anzeige des Hilfs-Tooltips für den Config-Auswahl-Infoknopf
+     * Anzeige des Hilfs-Tooltips für den Config-Auswahl-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -617,7 +624,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Verstecken des Hilfs-Tooltips für den Config-Auswahl-Infoknopf
+     * Verstecken des Hilfs-Tooltips für den Config-Auswahl-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -626,7 +633,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Anzeige des Hilfs-Tooltips für den Config-Namen-Infoknopf
+     * Anzeige des Hilfs-Tooltips für den Config-Namen-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -635,7 +642,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Verstecken des Hilfs-Tooltips für den Config-Namen-Infoknopf
+     * Verstecken des Hilfs-Tooltips für den Config-Namen-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -644,7 +651,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Anzeige des Hilfs-Tooltips für den Python-Pfad-Infoknopf
+     * Anzeige des Hilfs-Tooltips für den Python-Pfad-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -653,7 +660,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Verstecken des Hilfs-Tooltips für den Python-Pfad-Infoknopf
+     * Verstecken des Hilfs-Tooltips für den Python-Pfad-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -662,7 +669,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Anzeige des Hilfs-Tooltips für den GDAL-Pfad-Infoknopf
+     * Anzeige des Hilfs-Tooltips für den GDAL-Pfad-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -671,7 +678,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Verstecken des Hilfs-Tooltips für den GDAL-Pfad-Infoknopf
+     * Verstecken des Hilfs-Tooltips für den GDAL-Pfad-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -680,7 +687,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Anzeige des Hilfs-Tooltips für den GRASS-Pfad-Infoknopf
+     * Anzeige des Hilfs-Tooltips für den GRASS-Pfad-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -689,7 +696,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Verstecken des Hilfs-Tooltips für den GRASS-Pfad-Infoknopf
+     * Verstecken des Hilfs-Tooltips für den GRASS-Pfad-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -698,7 +705,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Anzeige des Hilfs-Tooltips für den GRASS-BIN-Pfad-Infoknopf
+     * Anzeige des Hilfs-Tooltips für den GRASS-BIN-Pfad-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -707,7 +714,7 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Verstecken des Hilfs-Tooltips für den GRASS-BIN-Pfad-Infoknopf
+     * Verstecken des Hilfs-Tooltips für den GRASS-BIN-Pfad-Infoknopf.
      * @param event Mouseover-Event
      */
     @FXML
@@ -716,7 +723,9 @@ public class PathController implements Initializable {
     }
 
     /**
-     * Anzeige des Steuerparameter-Eingabefensters 
+     * Anzeige des Steuerparameter-Eingabefensters.
+     * Bei Betätigung des Zurück-Knopfes auf der Benutzeroberfläche wird 
+     * das Eingabefenster für die Steuerungsparameter angezeigt.
      * @param event Click-Event
      */
     @FXML

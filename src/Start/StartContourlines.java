@@ -9,26 +9,23 @@ package Start;
 import bo.GuiEnum;
 import gui.controller.MainController;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- *
+ * Startklasse des Programms
  * @author u203011
  */
 public class StartContourlines extends Application {
     
+    /**
+     * Startmethode des JavaFX-Projektes.
+     * Die Startmethode initialisiert den MainController und lässt ihn das erste 
+     * Fenster anzeigen.
+     * @param stage Programmfenster
+     * @throws Exception Fehler, wenn das JavaFX-Projekt nicht gestartet werden kann
+     */
     @Override
     public void start(Stage stage) throws Exception {
-        /*Parent root = FXMLLoader.load(getClass().getResource("MainGUI.fxml"));
-        
-        Scene scene = new Scene(root);
-        
-        stage.setScene(scene);
-        stage.show();*/
-        
         MainController mainController = MainController.getMainController(stage);
         mainController.showWindow(GuiEnum.INPUT);
     }

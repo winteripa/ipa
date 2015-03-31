@@ -7,7 +7,7 @@
 package module;
 
 /**
- * Klasse für die Bereitstellung der Parameter für den Chaiken Smooth-Algorithmus
+ * Klasse mit Steuerungsparameter für die Anwendung des Chaiken Smooth-Algorithmus.
  * @author u203011
  */
 public class ChaikenSmooth {

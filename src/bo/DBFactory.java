@@ -18,6 +18,10 @@ public class DBFactory {
     
     /**
      * Methode um eine DAL-Klasse mit implementierten IDAL-Interface zu erhalten.
+     * Die Methode gibt ein Objekt einer DAL-Klasse, welche das IDAL-Interface 
+     * implementiert zurück. Vorteil: Die Klasse oder das Objekt, welches ein Objekt 
+     * der DAL-Klasse benötigt muss nur das IDAL-Interface importieren. Somit 
+     * ist es egal, welche DAL-Klasse hinter dem IDAL-Interface steht.
      * @param logger Logger-Klasse des Projekts
      * @return DAL-Klasse
      */

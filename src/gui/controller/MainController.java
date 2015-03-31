@@ -26,25 +26,30 @@ import javafx.stage.Stage;
 import tools.StandaloneLogger;
 
 /**
- * Hauptcontroller-Klasse
- *
+ * Hauptcontroller-Klasse.
+ * Zentrale Stelle für Interaktion zwischen den einzelnen GUI-Controllern.
  * @author u203011
  */
 public class MainController {
     
     private static MainController mainController = null;
     private static Stage stage = null;
+    /** Zentrale Höhenlinienkonfiguration */
     private static HoehenlinienConfig hConfig = null;
+    /** Zentrale Loggerklasse der Standalone-Version */
     private static DisplayMethods logger = null;
     
     /**
-     * Private-deklarierter Konstruktor für das Singleton-Pattern
+     * Private-deklarierter Konstruktor für das Singleton-Pattern.
+     * Nur ein Objekt des MainControllers darf vorhanden sein. Darum darf 
+     * keine Objekt von aussen erstellt werden.
      */
     private MainController(){
     }
     
     /**
-     * Methode zum Erhalt eines eindeutigen Hauptcontrollers
+     * Methode zum Erhalt eines eindeutigen Hauptcontrollers.
+     * Ein einzigartiges MainController-Objekt wird erstellt und zurückgegeben.
      * @param stage Hauptstage
      * @return Hauptcontroller
      */
@@ -60,7 +65,7 @@ public class MainController {
     }
     
     /**
-     * Methode zum Austausch der GUIs
+     * Methode zum Austausch der GUIs.
      * @param windowToShow Fenster, welches gezeigt werden soll
      */
     public void showWindow(GuiEnum windowToShow) {
@@ -95,7 +100,9 @@ public class MainController {
     }
     
     /**
-     * Methode zum Hinzufügen der Konfigurations-Models zur Höhenlinienkonfiguration
+     * Methode zum Hinzufügen der Konfigurations-Models zur Höhenlinienkonfiguration.
+     * Hinzufügen der eingegebenen Steuerungsparameter oder der Pfad-Konfiguration 
+     * zur zentralen Höhenlinien-Konfiguration.
      * @param currWindow Derzeit angezeigtes Fenster
      * @param model Model, welches hinzugefügt werden soll
      */
@@ -109,7 +116,7 @@ public class MainController {
     }
     
     /**
-     * Getter-Methode für die Höhenlinien-Konfiguration
+     * Getter-Methode für die Höhenlinien-Konfiguration.
      * @return Höhenlinien-Konfiguration
      */
     public HoehenlinienConfig getHoehenlinienConfig() {
@@ -117,7 +124,7 @@ public class MainController {
     }
     
     /**
-     * Getter-Methode für den Standalone-Logger
+     * Getter-Methode für den Standalone-Logger.
      * @return Standalone-Logger
      */
     public DisplayMethods getStandaloneLogger() {
@@ -125,7 +132,7 @@ public class MainController {
     }
     
     /**
-     * Methode für das Hinzufügen eines Fragezeichen-Icons für ein Label
+     * Methode für das Hinzufügen eines Fragezeichen-Icons für ein Label.
      * @param lbl Label ohne Fragezeichen-Icon
      */
     protected void addInterrogationPic(Label lbl) {
@@ -133,7 +140,7 @@ public class MainController {
     }
     
     /**
-     * Methode für das Hinzufügen eines Ausrufezeichen-Icons für ein Label
+     * Methode für das Hinzufügen eines Ausrufezeichen-Icons für ein Label.
      * @param lbl Label ohne Ausrufezeichen-Icon
      */
     protected void addExclamationPic(Label lbl) {
@@ -141,7 +148,7 @@ public class MainController {
     }
     
     /**
-     * Methode, welche einem Label einen Tooltip mit wählbarem Text hinzufügt
+     * Methode, welche einem Label einen Tooltip mit wählbarem Text hinzufügt.
      * @param lbl Label ohne Tooltip
      * @param text Tooltip-Text
      */
@@ -152,7 +159,7 @@ public class MainController {
     }
     
     /**
-     * Methode um den Tooltip eines Label an der richtigen Position anzuzeigen
+     * Methode um den Tooltip eines Label an der richtigen Position anzuzeigen.
      * @param lbl Label mit Tooltip
      */
     protected void showTooltipOnPosition(Label lbl) {
@@ -163,7 +170,9 @@ public class MainController {
     }
     
     /**
-     * Methode, welche dem Logger-Klassen-Objekt wichtige Daten übergibt
+     * Methode, welche dem Logger-Klassen-Objekt wichtige Daten übergibt.
+     * Initialisierung der Standalone-Loggerklasse, damit die Gui-Controller 
+     * Meldungen in das Logfile schreiben können.
      * @param model Model mit Steuerungsparameter
      */
     private void initializeLogger(InputModel model) {
@@ -174,7 +183,10 @@ public class MainController {
     
     /**
      * Methode zum Setzen des Status-GUIs im Logger-Klassen-Objekt
-     * um Nachrichten darauf auszugeben
+     * um Nachrichten darauf auszugeben.
+     * Vor der Bestellung muss die Applikation wissen, in welchem Fenster sie 
+     * die Statusmeldungen für den Benutzer anzeigen kann. Dafür wird der 
+     * Standalone-Loggerklasse ein Objekt des StatusControllers übergeben.
      * @param statusGui Status-GUI
      */
     public void setLoggerStatusGui(StatusController statusGui) {

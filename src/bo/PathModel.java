@@ -9,7 +9,7 @@ package bo;
 import java.io.File;
 
 /**
- * Klasse für die Beschreibung der Konfigurationspfade
+ * Klasse für die Beschreibung der Konfigurationspfade.
  * @author u203011
  */
 public class PathModel implements IMODEL {

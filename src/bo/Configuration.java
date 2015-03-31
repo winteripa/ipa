@@ -98,7 +98,8 @@ public class Configuration {
     }
     
     /**
-     * Methode, welche die toString()-Standardmethode überschreibt für die richtige Darstellung in der Combobox
+     * Methode, welche die toString()-Standardmethode überschreibt 
+     * für die richtige Darstellung in der Combobox
      * @return Konfigurationsname
      */
     @Override

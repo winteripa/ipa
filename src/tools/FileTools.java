@@ -39,7 +39,7 @@ public class FileTools {
     private ArrayList<String> filesToZip = null;
     
     /**
-     * Methode für das parsen einer XML-Datei
+     * Methode für das parsen einer XML-Datei.
      * @param path Pfad zur XML-Datei
      * @return DOM-Objekt der XML-Datei oder null
      */
@@ -67,7 +67,7 @@ public class FileTools {
     }
     
     /**
-     * Methode zum Schreiben des Logfiles
+     * Methode zum Schreiben des Logfiles.
      * @param logfile Logfile-Pfad
      * @param content Inhalt, der in das Logfile geschrieben wird
      */
@@ -80,7 +80,7 @@ public class FileTools {
     }
     
     /**
-     * Methode zum Schreiben einer Datei 
+     * Methode zum Schreiben einer Datei.
      * @param append Flag, ob der Text einer Datei hinzugefügt werden soll
      * @param filepath Pfad zur Datei
      * @param content Inhalt, der in die Datei geschrieben wird
@@ -103,7 +103,9 @@ public class FileTools {
     }
     
     /**
-     * Methode für das Löschen einer Datei
+     * Methode für das Löschen einer Datei.
+     * Diese Methode löscht eine existierende Datei auf dem Dateisystem. Falls 
+     * die Datei nicht vorhanden ist, gilt sie als gelöscht.
      * @param filepath Pfad zur Datei
      * @return Löschstatus
      */
@@ -121,6 +123,13 @@ public class FileTools {
         return false;
     }
     
+    /**
+     * Methode für das Löschen eines Verzeichnisses.
+     * Diese Methode löscht ein existierendes Verzeichnis auf dem Dateisystem. Falls 
+     * das Verzeichnis nicht vorhanden ist, gilt es als gelöscht.
+     * @param dirpath
+     * @return 
+     */
     public boolean deleteExistingDir(String dirpath) {
         try {
             File file = new File(dirpath);
@@ -141,7 +150,7 @@ public class FileTools {
     }
     
     /**
-     * Methode zum Prüfen, ob eine Datei existiert
+     * Methode zum Prüfen, ob eine Datei existiert.
      * @param filepath Pfad zur Datei
      * @return Existenzstatus
      */
@@ -156,7 +165,9 @@ public class FileTools {
     }
     
     /**
-     * Methode zum Schreiben einer Datei innerhalb der Jar-Datei in ein bestimmtes Verzeichnis
+     * Methode zum Schreiben einer Datei innerhalb der Jar-Datei in ein bestimmtes Verzeichnis.
+     * Diese Methode kopiert die Datei, welche sich im JAR befindet und fügt 
+     * sie im Zielverzeichnis ein.
      * @param insideRes Dateiname für die Datei innerhalb des 'res'-Packages
      * @param outputPath Ausgabe-Verzeichnis
      * @return Erstellungsstatus
@@ -191,6 +202,14 @@ public class FileTools {
         return false;
     }
     
+    /**
+     * Methode zum Schreiben eines Verzeichnisses innerhalb der Jar-Datei in ein bestimmtes Verzeichnis.
+     * Das Verzeichnis muss gezippt sein. Der Inhalt der ZIP-Datei (ein Verzeichnis) 
+     * wird in das Zielverzeichnis entpackt.
+     * @param insideRes Dateiname für die Datei innerhalb des 'res'-Packages
+     * @param outputPath Ausgabe-Verzeichnis
+     * @return Erstellungsstatus
+     */
     public boolean copyInsideDirToDisc(String insideRes, String outputPath) {
         try {
             InputStream resInStream = FileTools.class.getResourceAsStream("/res/" + insideRes);
@@ -232,6 +251,12 @@ public class FileTools {
         return true;
     }
     
+    /**
+     * Methode zum Schreiben eines Batch-Files in ein Verzeichnis.
+     * @param batchpath Pfad + Dateiname des Batches, welches angelegt werden soll.
+     * @param content Inhalt des Batch-Files
+     * @return Erstellungsstatus
+     */
     public boolean writeBatchFile(String batchpath, String content) {
         if(deleteExistingFile(batchpath)) {
             this.writeFile(false, batchpath, content);
@@ -243,6 +268,12 @@ public class FileTools {
         return false;
     }
     
+    /**
+     * Methode zum Schreiben einer Gisrc-Datei in ein Verzeichnis.
+     * @param grassrcpath Pfad + Dateiname der Gisrc-Datei, welche angelegt werden soll.
+     * @param content Inhalt der Gisrc-Datei
+     * @return Erstellungsstatus
+     */
     public boolean writeGrassrcFile(String grassrcpath, String content) {
         if(deleteExistingFile(grassrcpath)) {
             this.writeFile(false, grassrcpath, content);
@@ -254,6 +285,13 @@ public class FileTools {
         return false;
     }
     
+    /**
+     * Methode zur Erstellung eines Verzeichnisses.
+     * In dieser Methode wird ein neues Verzeichnis erstellt. Falls das Verzeichnis 
+     * schon vorhanden sein sollte, so gilt es als erstellt.
+     * @param dirname Pfad zum neuen Verzeichnis
+     * @return Erstellungsstatus
+     */
     public boolean createDir(String dirname) {
         File dir = new File(dirname);
         
@@ -264,6 +302,13 @@ public class FileTools {
         return dir.mkdir();
     }
     
+    /**
+     * Methode zum Speichern eines Bildes aus einer URL.
+     * Das Bild aus der URL wird im Zielverzeichnis als PNG-Datei abgespeichert.
+     * @param strUrl URL zum Bild
+     * @param outputFile Pfad zum zu erstellenden Bild
+     * @return Erstellungsstatus
+     */
     public boolean saveImgFromUrl(String strUrl, String outputFile) {
         BufferedImage img = null;
 
@@ -290,6 +335,14 @@ public class FileTools {
         return false;
     }
     
+    /**
+     * Methode zur Erstellung einer ZIP-Datei.
+     * In dieser Methode wird ein Verzeichnis in eine ZIP-Datei verpackt. 
+     * Alle Unterverzeichnisse sind enthalten.
+     * @param folderToZip Zu zippendes Verzeichnis
+     * @param zipfile Pfad zur zu erstellenden ZIP-Datei
+     * @return Erstellungsstatus
+     */
     public boolean makeZip(String folderToZip, String zipfile) {
         this.filesToZip = new ArrayList<>();
         this.addFilesToZip(new File(folderToZip), folderToZip);
@@ -327,6 +380,13 @@ public class FileTools {
         return false;
     }
     
+    /**
+     * Methode zum Hinzufügen von Dateien in ein ZIP-Archiv.
+     * In dieser Methode werden alle Pfade mit zu zippenden Dateien gesammelt. 
+     * Wichtig: Der Pfad geht nur bis Zum Verzeichnis, das gezippt werden soll.
+     * @param currDir Momentanes Unterverzeichnis (oder Datei) im Order, der gezippt werden soll
+     * @param source Verzeichnis, das gezippt werden soll
+     */
     private void addFilesToZip(File currDir, String source) {
         if(this.filesToZip != null) {
             if(currDir.isFile()) {
@@ -342,6 +402,14 @@ public class FileTools {
         }
     }
     
+    /**
+     * Methode zum Erhalt des Pfades zur Datei innerhalb des zu zippenden Verzeichnisses.
+     * Diese Methode gibt den Pfad bis zum Verzeichnis, welches gezippt werden soll, 
+     * zurück, nicht den absoluten Pfad.
+     * @param absFile Absoluter Pfad bis zur Datei
+     * @param source Verzeichnis, das gezippt werden soll
+     * @return Pfad zur Datei
+     */
     private String getZipPath(String absFile, String source) {
         return absFile.substring(source.length()+1, absFile.length());
     }

@@ -7,11 +7,10 @@
 package bo;
 
 /**
- * Klasse, welche die Höhenlinienkonfiguration repräsentiert
+ * Klasse, welche die Höhenlinienkonfiguration repräsentiert.
  * @author u203011
  */
 public class HoehenlinienConfig {
-    private String version = null;
     private InputModel inputModel = null;
     private PathModel pathModel = null;
 
@@ -21,22 +20,6 @@ public class HoehenlinienConfig {
     public HoehenlinienConfig() {
         this.inputModel = new InputModel();
         this.pathModel = new PathModel();
-    }
-    
-    /**
-     * Getter-Methode für die Version
-     * @return Version
-     */
-    public String getVersion() {
-        return version;
-    }
-
-    /**
-     * Setter-Methode für die Version
-     * @param version Version
-     */
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     /**

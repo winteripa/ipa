@@ -63,9 +63,9 @@ public class StatusController implements Initializable {
     private Button btnBack;
     
     /**
-     * Initialisierungsmethode des Controllers
-     * @param url
-     * @param rb
+     * Initialisierungsmethode des Controllers.
+     * @param url JavaFX-Url
+     * @param rb JavaFX Resource Bundle
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -102,7 +102,8 @@ public class StatusController implements Initializable {
     }
 
     /**
-     * Methode, welche den Bestellungsprozess startet
+     * Methode, welche den Bestellungsprozess startet.
+     * Der Höhenlinien-Bestellvorgang wird in einem neuen Thread gestartet.
      * @param event Click-Event
      */
     @FXML
@@ -113,7 +114,7 @@ public class StatusController implements Initializable {
     }
 
     /**
-     * Getter-Methode für den Beenden-Knopf
+     * Getter-Methode für den Beenden-Knopf.
      * @return Beenden-Knopf
      */
     public Button getBtnFinish() {
@@ -121,7 +122,7 @@ public class StatusController implements Initializable {
     }
 
     /**
-     * Getter-Methode für das Status-Label
+     * Getter-Methode für das Status-Label.
      * @return Status-Label
      */
     public Label getLblStatus() {
@@ -129,7 +130,7 @@ public class StatusController implements Initializable {
     }
 
     /**
-     * Getter-Methode für den Fortschrittsbalken
+     * Getter-Methode für den Fortschrittsbalken.
      * @return Fortschrittsbalken
      */
     public ProgressBar getPbAppProgress() {
@@ -137,7 +138,7 @@ public class StatusController implements Initializable {
     }
 
     /**
-     * Getter-Methode für das Statusnachrichten-Fenster
+     * Getter-Methode für das Statusnachrichten-Fenster.
      * @return Statusnachrichten-Fenster
      */
     public TextArea getTxtStatus() {
@@ -145,13 +146,20 @@ public class StatusController implements Initializable {
     }
 
     /**
-     * Getter-Methode für den Bestell-Knopf
+     * Getter-Methode für den Bestell-Knopf.
      * @return Bestell-Knopf
      */
     public Button getBtnOrder() {
         return btnOrder;
     }
 
+    /**
+     * Methode zum Ändern des Wertes des Fortschrittbalkens.
+     * Diese Methode stellt anderen Klassen und Objekten die Möglichkeit zur 
+     * Verfügung den Wert des Fortschrittbalkens aus einem anderen Thread heraus 
+     * zu verändern.
+     * @param progress Fortschritt
+     */
     public void setProgress(final double progress) {
         //this.pbAppProgress.setProgress(progress);
         Platform.runLater(new Runnable() {
@@ -162,6 +170,13 @@ public class StatusController implements Initializable {
         });
     }
     
+    /**
+     * Methode zum Hinzufügen von Statusnachrichten.
+     * Diese Methode stellt anderen Klassen und Objekten die Möglichkeit zur 
+     * Verfügung Statusnachrichten dem Statusnachrichtenfenster aus einem anderen 
+     * Thread heraus hinzuzufügen.
+     * @param message Statusnachricht
+     */
     public void addStatusMessages(final String message) {
         Platform.runLater(new Runnable() {
             @Override
@@ -172,7 +187,9 @@ public class StatusController implements Initializable {
     }
     
     /**
-     * Anzeige des Pfad-Konfiguration-Eingabefensters 
+     * Anzeige des Pfad-Konfiguration-Eingabefensters.
+     * Bei Betätigung des Zurück-Knopfes auf der Benutzeroberfläche wird 
+     * das Fenster für die Auswahl der Pfad-Konfigurationen angezeigt.
      * @param event Click-Event
      */
     @FXML

@@ -9,7 +9,7 @@ package bo;
 import java.io.File;
 
 /**
- * Klasse für die Beschreibung der Steuerungsparameter
+ * Klasse für die Beschreibung der Steuerungsparameter.
  * @author u203011
  */
 public class InputModel implements IMODEL {

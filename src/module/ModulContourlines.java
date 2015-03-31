@@ -18,47 +18,72 @@ import tools.FileTools;
 import tools.FormatTools;
 
 /**
- * Modul-Klasse für die Erstellung der Höhenlinien
+ * Modul-Klasse für die Erstellung der Höhenlinien.
+ * Diese Klasse generiert die Höhenlinien-Datensätze und stellt die 3D-Visualisierung 
+ * bereit.
  * @author u203011
  */
 public class ModulContourlines {
 
     private static final double KACHEL_CELLSIZE = 0.5;
     private static final int KACHEL_COLS = 1000;
+    /** Attribut für die Dateinamen und den GRASS-Vektor, welche beim Import in GRASS eine Rolle spielen  */
     private static final String GRASSVECTORIMPORT = "vectorimport";
+    /** Attribut für die Dateinamen und den GRASS-Vektor, welche beim Anwenden des Smooth-Alogrithmus eine Rolle spielen  */
     private static final String GRASSSMOOTH = "grasssmooth";
+    /** Attribut für die Dateinamen und den GRASS-Vektor, welche beim Export aus GRASS eine Rolle spielen  */
     private static final String GRASSEXPORT = "grassexport";
+    /** Attribut für die Dateinamen und den GRASS-Vektor, welche beim Punkterechnen auf die Höhenlinien in GRASS eine Rolle spielen  */
     private static final String GRASSTOPOINTS = "grasstopoints";
+    /** Attribut für die Dateinamen und den GRASS-Vektor, welche beim Triangulieren in GRASS eine Rolle spielen  */
     private static final String GRASSDELAUNAY = "grassdelaunay";
+    /** Pfadangabe zu den Vector-Layern innerhalb vom GRASS-Mapset */
     private static final String GRASSVECTORPATH = "glocation\\grassmapset\\vector";
+    /** Name des GRASS-Mapset Verzeichnisses */
     private static final String GRASSMAPSETDIR = "grassmapset";
+    /** Auflösungsfaktor, z.B. 1 heisst 1:1 Auflösung, 2 heisst 1:2 Auflösung */
     private static final double VISUALIZATIONORTHOFACTOR = 2;
+    /** Name des Orthophotos für die 3D-Visualisierung */
     private static final String VISUALIZATIONORTHONAME = "orthophoto";
-    private static String contourlinesshapename = "_contourlines";
-    private static String visualizationFolder = "_visualisierung";
+    /** Dateinamen für das Shapefile und die JSON-Dateien (3D-Visualisierung) */
+    private String contourlinesshapename = "_contourlines";
+    /** Dateiname für die ZIP-Datei mit den Daten für die 3D-Visualisierung */
+    private String visualizationFolder = "_visualisierung";
     private boolean standalone;
     private HoehenlinienConfig hConfig = null;
     private DisplayMethods logger = null;
+    /** Pfad zur gdalbuildvrt.exe */
     private String gdalbuildvrt = null;
+    /** Pfad zur gdal_translate.exe */
     private String gdaltranslate = null;
+    /** Pfad zur gdal_contour.exe */
     private String gdalcontour = null;
     private String lidardataPath = null;
+    /** Pfad zur VRT-Datei */
     private String vrtRectangle = null;
+    /** Pfad zur zugeschnittenen Kachel */
     private String fittedTif = null;
+    /** Pfad zu den Source-Daten für die GDAL-Befehle */
     private String baseData = null;
     private ArrayList<String> arrKachelnr = null;
     private ArrayList<String> kacheln = null;
     private ArrayList<String> filesToDelete = null;
     private FileTools fileTool = null;
     private FormatTools formatTool = null;
+    /** Pfad zur GRASS Gisrc-Datei */
     private String grassGisrc = null;
+    /** Pfad zum GRASS-Mapset */
     private String grassGisdbase = null;
+    /** Name der GRASS-Location */
     private String grassLocation = null;
+    /** Name des GRASS-Mapset */
     private String grassMapset = null;
     private boolean smooth = false;
 
     /**
-     * Konstruktor der Modul-Klasse
+     * Konstruktor der Modul-Klasse (Standalone-Version).
+     * Dieser Konstruktor wird beim Erstellen eines Höhenlinien-Datensatzes 
+     * über die Standalone-Version verwendet. 
      * @param standalone Option für die Festlegung, ob im Standalone-Modus oder nicht
      * @param hConfig Höhenlinien-Konfigurationsobjekt
      * @param logger Objekt eines DisplayMethods-Logger
@@ -77,10 +102,9 @@ public class ModulContourlines {
     }
     
     /**
-     * Konstruktor der Modul-Klasse für den Modulbetrieb
-     * Für den Modulbetrieb werden nicht die gleichen Argumente, wie im 
-     * Standalone-Betrieb benötigt. Die betroffenen Kachelnummern werden 
-     * durch den Pfad des fertigen Ausschnittes ersetzt.
+     * Konstruktor der Modul-Klasse (Modul-Version).
+     * Dieser Konstruktor wird beim Erstellen eines Höhenlinien-Datensatzes 
+     * über die Modul-Version verwendet. Die Kachelnummern sind nicht mehr notwendig.
      * @param standalone Option für die Festlegung, ob im Standalone-Modus oder nicht
      * @param hConfig Höhenlinien-Konfigurationsobjekt
      * @param logger Objekt eines DisplayMethods-Logger
@@ -96,6 +120,11 @@ public class ModulContourlines {
         this.formatTool = new FormatTools();
     }
 
+    /**
+     * Methode zur Erstellung der Grundlagendaten.
+     * Separate Methode für die Erstellung der Grundlagen-Daten.
+     * @return Erstellungssatus der Grundlagendaten
+     */
     public boolean prepareGenerateBase() {
         lidardataPath = hConfig.getInputModel().getLidardatapath().getAbsolutePath();
         gdalbuildvrt = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdalbuildvrt.exe";
@@ -114,8 +143,12 @@ public class ModulContourlines {
     }
     
     /**
-     * Start-Methode für die Erstellung eines Höhenlinien-Datensatzes
-     * @return Erstellungsstatus (erfolgreich oder nicht)
+     * Methode zur Erstellung des Höhenlinien-Datensatzes.
+     * Beim Start dieser Methode müssen die Grundlagen-Daten bereitstehen. 
+     * In dieser Methode werden die Grundlagen-Daten ausgedünnt, die Höhenlinien 
+     * werden erstellt, der Smooth-Algorithmus wird angewandt und die 3D-Visualisierung 
+     * wird erstellt.
+     * @return Erstellungsstatus Höhenlinien-Datensatz (+ 3D-Visualisierung)
      */
     public boolean generateContourlines() {
         String errMsg = "";
@@ -123,135 +156,113 @@ public class ModulContourlines {
         
         System.out.println(this.clearOutputDir());
         
-        /*if(this.standalone) {
-            lidardataPath = hConfig.getInputModel().getLidardatapath().getAbsolutePath();
-            gdalbuildvrt = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdalbuildvrt.exe";
-            gdaltranslate = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdal_translate.exe";
-            
-            baseResult = this.generateBase();
-        }*/
-        
-        //if(baseResult) {
-            gdalcontour = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdal_contour.exe";
-            
-            if(!makeThinning()) {
-//                errMsg += "Fehler beim Ausdünnen der Punkte.\n---------------------\n"
-//                        + "Bitte melden Sie sich beim Administrator und schicken Sie "
-//                        + "ihm das Logfile.";
-//                logger.writeLog(errMsg);
-                
-                errMsg += "Fehler beim Ausdünnen der Punkte."
-                        + "Bitte melden Sie sich beim Administrator und schicken Sie "
-                        + "ihm das Logfile.";
-                logger.writeLog(LogPrefix.LOGERROR + errMsg);
+        gdalcontour = hConfig.getPathModel().getGdalpath().getAbsolutePath() + "\\gdal_contour.exe";
 
-                logger.writeErrorStatus("Ausschnitt konnte nicht ausgedünnt werden.");
-                
-                return false;
-            }
-            
-            if(!makeContourlines()) {
-//                errMsg += "Fehler beim Erstellen der Höhenlinien.\n-------------------------\n"
-//                        + "Bitte kontrollieren Sie den ausgeführten Befehl auf "
-//                        + "seine Funktionalität oder wenden Sie sich danach an "
-//                        + "Ihren Administrator und senden ihm Ihr Logfile.";
-//                logger.writeLog(errMsg);
-//                logger.writeLog("");
-                errMsg += "Fehler beim Erstellen der Höhenlinien."
-                        + "Bitte kontrollieren Sie den ausgeführten Befehl auf "
-                        + "seine Funktionalität oder wenden Sie sich danach an "
-                        + "Ihren Administrator und senden ihm Ihr Logfile.";
-                logger.writeLog(LogPrefix.LOGERROR + errMsg);
-                
-                logger.writeErrorStatus("Höhenlinien konnten nicht erstellt werden.");
-                
-                return false;
-            } else {
-                if(hConfig.getInputModel().getSmooth() != null || 
-                        hConfig.getInputModel().isForce3D()) {
-                    if(this.initializeGrass()) {
-                        if(this.makeGrassVectorImport()) {
-                            if(hConfig.getInputModel().getSmooth() != null) {
-                                this.smooth = true;
-                                
-                                if(this.makeGrassSmooth()) {
-                                    if(!this.makeGrassShpExport(GRASSSMOOTH)) {
-                                        this.clearGrass();
-                                        this.deleteOldFiles();
-                        
-                                        logger.writeErrorStatus("Fehler der Smooth-Alogrithmus konnte nicht "
-                                                + "angwendet werden.");
-                                        return false;
-                                    }
-                                } else {
-                                    this.clearGrass();
-                                    this.deleteOldFiles();
-                                    
-                                    logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus (GRASS-Smooth)");
-                                    return false;
-                                }
-                            }
-                            
-                            if(hConfig.getInputModel().isForce3D()) {
-                                if(!makeVisualization3d()) {
+        if(!makeThinning()) {
+
+            errMsg += "Fehler beim Ausdünnen der Punkte."
+                    + "Bitte melden Sie sich beim Administrator und schicken Sie "
+                    + "ihm das Logfile.";
+            logger.writeLog(LogPrefix.LOGERROR + errMsg);
+
+            logger.writeErrorStatus("Ausschnitt konnte nicht ausgedünnt werden.");
+
+            return false;
+        }
+
+        if(!makeContourlines()) {
+            errMsg += "Fehler beim Erstellen der Höhenlinien."
+                    + "Bitte kontrollieren Sie den ausgeführten Befehl auf "
+                    + "seine Funktionalität oder wenden Sie sich danach an "
+                    + "Ihren Administrator und senden ihm Ihr Logfile.";
+            logger.writeLog(LogPrefix.LOGERROR + errMsg);
+
+            logger.writeErrorStatus("Höhenlinien konnten nicht erstellt werden.");
+
+            return false;
+        } else {
+            if(hConfig.getInputModel().getSmooth() != null || 
+                    hConfig.getInputModel().isForce3D()) {
+                if(this.initializeGrass()) {
+                    if(this.makeGrassVectorImport()) {
+                        if(hConfig.getInputModel().getSmooth() != null) {
+                            this.smooth = true;
+
+                            if(this.makeGrassSmooth()) {
+                                if(!this.makeGrassShpExport(GRASSSMOOTH)) {
                                     this.clearGrass();
                                     this.deleteOldFiles();
 
+                                    logger.writeErrorStatus("Fehler der Smooth-Alogrithmus konnte nicht "
+                                            + "angwendet werden.");
+                                    return false;
+                                }
+                            } else {
+                                this.clearGrass();
+                                this.deleteOldFiles();
+
+                                logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus (GRASS-Smooth)");
+                                return false;
+                            }
+                        }
+
+                        if(hConfig.getInputModel().isForce3D()) {
+                            if(!makeVisualization3d()) {
+                                this.clearGrass();
+                                this.deleteOldFiles();
+
+                                return false;
+                            } else {
+                                String folderToZip = hConfig.getInputModel()
+                                        .getOutput().getAbsolutePath()
+                                        + "\\" + visualizationFolder;
+                                String visualizationZip = folderToZip + ".zip";
+
+                                if(!fileTool.makeZip(folderToZip, visualizationZip)) {
+                                    this.fileTool.deleteExistingDir(folderToZip);
+                                    this.clearGrass();
+                                    this.deleteOldFiles();
+
+                                    logger.writeErrorStatus("Visualisierungs-Zipfile "
+                                            + "konnte nicht erstellt werden");
+
                                     return false;
                                 } else {
-                                    String folderToZip = hConfig.getInputModel()
-                                            .getOutput().getAbsolutePath()
-                                            + "\\" + visualizationFolder;
-                                    String visualizationZip = folderToZip + ".zip";
-                                    
-                                    if(!fileTool.makeZip(folderToZip, visualizationZip)) {
-                                        this.fileTool.deleteExistingDir(folderToZip);
-                                        this.clearGrass();
-                                        this.deleteOldFiles();
-
-                                        logger.writeErrorStatus("Visualisierungs-Zipfile "
-                                                + "konnte nicht erstellt werden");
-                                        
-                                        return false;
-                                    } else {
-                                        this.fileTool.deleteExistingDir(folderToZip);
-                                        logger.writeStatus("Zipfile für die 3D-"
-                                                + "Visualisierung wurde erstellt");
-                                    }
+                                    this.fileTool.deleteExistingDir(folderToZip);
+                                    logger.writeStatus("Zipfile für die 3D-"
+                                            + "Visualisierung wurde erstellt");
                                 }
                             }
-                        } else {
-                            this.clearGrass();
-                            this.deleteOldFiles();
-                            
-                            logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus (GRASS-Import)");
-                            return false;
                         }
                     } else {
                         this.clearGrass();
                         this.deleteOldFiles();
-                        
-                        logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus");
+
+                        logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus (GRASS-Import)");
                         return false;
                     }
-                    
-                    //makeVisualization3d();
+                } else {
+                    this.clearGrass();
+                    this.deleteOldFiles();
+
+                    logger.writeErrorStatus("Fehler beim Anwenden des Smooth-Algorithmus");
+                    return false;
                 }
             }
-        /*} else {
-            errMsg += "Fehler beim Erstellen der Datengrundlage.";
-            
-            //logger.writeLog(errMsg);
-            logger.writeLog(LogPrefix.LOGERROR + errMsg);
-            
-            return false;
-        }*/
+        }
         
         this.clearGrass();
         this.deleteOldFiles();
         return true;
     }
     
+    /**
+     * Methode zur Erstellung des Three.js-Projekts für die 3D-Visualisierung.
+     * In dieser Methode wird das Three.js Projekt aufgebaut und mit den Three.js 
+     * Bibliotheken, dem Orthophoto und den JSON-Dateien mit dem vermaschten Gelände 
+     * und den Höhenlinien erstellt. 
+     * @return Erstellungsstatus 3D-Visualisierung
+     */
     private boolean makeVisualization3d() {
         String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
         String visualizationPath = baseOutputDir + visualizationFolder;
@@ -480,6 +491,12 @@ public class ModulContourlines {
         return true;
     }
     
+    /**
+     * Methode für den Export des vermaschten Geländes (3D-Visualisierung).
+     * In dieser Methode wird das vermaschte Gelände für die 3D-Visualisierung 
+     * als GeoJSON-Datei aus GRASS exportiert.
+     * @return Erstellungsstatus der GeoJSON-Datei
+     */
     private boolean makeGrassTinGeoJsonExport() {
         String visualizationRes = hConfig.getInputModel().getOutput().getAbsolutePath() 
                 + "\\" + visualizationFolder + "\\res\\";
@@ -491,6 +508,12 @@ public class ModulContourlines {
         return this.makeGrassGeoJsonExport(GRASSDELAUNAY, "area", visualizationRes, outputName);
     }
     
+    /**
+     * Methode für den Export der Höhenlinien (3D-Visualisierung).
+     * In dieser Methode werden die Höhenlinien als GeoJSON-Datei für die 3D-Visualisierung 
+     * aus GRASS exportiert.
+     * @return Erstellungsstatus der GeoJSON-Datei
+     */
     private boolean makeGrassLineGeoJsonExport() {
         String visualizationRes = hConfig.getInputModel().getOutput().getAbsolutePath() 
                 + "\\" + visualizationFolder + "\\res\\";
@@ -507,6 +530,18 @@ public class ModulContourlines {
         return this.makeGrassGeoJsonExport(input, "line", visualizationRes, outputName);
     }
     
+    /**
+     * Methode zum Exportieren von GeoJSON-Dateien.
+     * Alle Methoden, welche eine GeoJSON-Datei exportieren wollen, müssen 
+     * diese Methode aufrufen. Die ins Zielverzeichnis kopierte Batch-Datei und 
+     * die Python-Datei, welche den GRASS-Befehls absetzt, werden ausgeführt.
+     * Das GRASS-Modul v.out.ogr für den Export wird ausgeführt.
+     * @param inputToExport Name des GRASS-Vektorlayers, das exportiert werden soll
+     * @param type Typ des Inhalts, z.B. Line bei Höhenlinien
+     * @param outDir Ausgabeverzeichnis für die GeoJSON-Dateien
+     * @param outName Dateiname der GeoJSON-Datei
+     * @return Erstellungsstatus der GeoJSON-Datei
+     */
     private boolean makeGrassGeoJsonExport(String inputToExport, String type, 
             String outDir, String outName) {
         String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
@@ -567,6 +602,13 @@ public class ModulContourlines {
         return false;
     }
     
+    /**
+     * Methode zur Vermaschung der Höhenlinien-Punkte.
+     * Die ins Zielverzeichnis kopierte Batch-Datei und die Python-Datei, 
+     * welche den GRASS-Befehls absetzt, werden ausgeführt. Das GRASS-Modul 
+     * v.delaunay für die Triangulation wird ausgeführt.
+     * @return Erstellungsstatus der Triangulation
+     */
     private boolean makeGrassDelaunayTriangulation() {
         String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
         HashMap<String, String> grassDelaunayArgs = new HashMap<>();
@@ -620,6 +662,13 @@ public class ModulContourlines {
         return false;
     }
     
+    /**
+     * Methode zum Rechnen von Punkten auf die Höhenlinien.
+     * Die ins Zielverzeichnis kopierte Batch-Datei und die Python-Datei, 
+     * welche den GRASS-Befehls absetzt, werden ausgeführt. Das GRASS-Modul 
+     * v.to.points für die Triangulation wird ausgeführt.
+     * @return Erstellungsstatus der gerechneten Punkte
+     */
     private boolean makeGrassLineToPoints() {
         String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
         HashMap<String, String> grassToPointsArgs = new HashMap<>();
@@ -684,7 +733,7 @@ public class ModulContourlines {
     }
     
     /**
-     * Methode zum Export eines GRASS-Vektorshapes in ein ESRI Shapefile.
+     * Methode zum Export eines GRASS-Vektorlayers in ein ESRI Shapefile.
      * Diese Methode exportiert den gesmoothen Höhenlinien-Datensatz. 
      * Aus diesem Grund werden zuerst die alten Höhenlinien-Datensätze im 
      * Zielverzeichnis gelöscht. Anschliessend wird die Batch-Datei für die Ausführung
@@ -782,13 +831,13 @@ public class ModulContourlines {
     }
     
     /**
-     * Methode zur Anwendung eines Smooth-Algorithmus auf das GRASS-Vektorshape.
+     * Methode zur Anwendung eines Smooth-Algorithmus auf den GRASS-Vektorlayer.
      * Anhand des gewählten Smooth-Algorithmus werden die Parameter für die 
      * Ausführung des Smooths bestimmt. Anschliessend wird die Batch-Datei zur 
      * Ausführung des Python-Moduls und das Python-Modul für den Smooth-Algorithmus 
      * in das Zielverzeichnis kopiert und ausgeführt. Nach erfolgreicher Ausführung 
      * werden das Batch-File und das Python-File wieder gelöscht.
-     * @return Erstellungsstatus des gesmoothen GRASS-Vektorshapes
+     * @return Erstellungsstatus des gesmoothen GRASS-Vektorlayers
      */
     private boolean makeGrassSmooth() {
         HashMap<String, String> grassSmoothArgs = new HashMap<>();
@@ -907,8 +956,11 @@ public class ModulContourlines {
     /**
      * Methode zum Import des Höhenlinien-Datensatzes (ESRI Shapefile) nach GRASS.
      * In dieser Methode wird der bestehende Höhenlinien-Datensatz in ein GRASS-
-     * Vektorshape konvertiert. 
-     * @return 
+     * Vektorlayer konvertiert. Dazu wird die Batch-Datei zur 
+     * Ausführung des Python-Moduls und das Python-Modul für den Import des Shapefiles
+     * in das Zielverzeichnis kopiert und ausgeführt. Nach erfolgreicher Ausführung 
+     * werden das Batch-File und das Python-File wieder gelöscht.
+     * @return Erstellungsstatus des GRASS-Vektorlayers
      */
     private boolean makeGrassVectorImport() {
         HashMap<String, String> vectorImportArgs = new HashMap<>();
@@ -942,7 +994,8 @@ public class ModulContourlines {
                             + GRASSVECTORIMPORT;
                     
                     String errMsg = "Fehler bei der Konvertierung der Vektorshape-Datei "
-                            + "in ein GRASS-Vektorshape.";
+                            + "in ein GRASS-Vektorshape. Bitte GRASS-BIN- und GRASS-Pfadangabe "
+                            + "kontrollieren.";
                     if(this.doesResultExits(output, errMsg)) {
                         this.filesToDelete.add(baseOutputDir + GRASSVECTORIMPORT + ".bat");
                         this.filesToDelete.add(baseOutputDir + GRASSVECTORIMPORT + ".py");
@@ -966,6 +1019,14 @@ public class ModulContourlines {
         return false;
     }
     
+    /**
+     * Methode zum Schreiben des Batch-Files für die Vermaschung.
+     * In dieser Methode werden die ungeordneten Parameter für die Vermaschung 
+     * in die richtige Reihenfolge gebracht und die Methode zum Schreiben eines 
+     * Batch-Files aufgerufen.
+     * @param args Ungeordnete Argumente für die Vermaschung
+     * @return Erstellungsstatus Batch-File
+     */
     private boolean writeDelaunayBatch(HashMap<String, String> args) {
         String batchname = GRASSDELAUNAY + ".bat";
         String pythonmodule = GRASSDELAUNAY + ".py";
@@ -979,6 +1040,14 @@ public class ModulContourlines {
         return this.writeGrassBatch(batchname, pythonmodule, properArgs);
     }
     
+    /**
+     * Methode zum Schreiben des Batch-Files für das Rechnen der Punkte auf die Höhenlinen.
+     * In dieser Methode werden die ungeordneten Parameter für das Rechnen der 
+     * Punkte auf die Höhenlininen in die richtige Reihenfolge gebracht und 
+     * die Methode zum Schreiben eines Batch-Files aufgerufen.
+     * @param args Ungeordnete Argumente für die das Rechnen der Punkte auf die Höhenlinen
+     * @return Erstellungsstatus Batch-File
+     */
     private boolean writeLineToPointsBatch(HashMap<String, String> args) {
         String batchname = GRASSTOPOINTS + ".bat";
         String pythonmodule = GRASSTOPOINTS + ".py";
@@ -995,6 +1064,14 @@ public class ModulContourlines {
         return this.writeGrassBatch(batchname, pythonmodule, properArgs);
     }
     
+    /**
+     * Methode zum Schreiben des Batch-Files für den Export aus GRASS.
+     * In dieser Methode werden die ungeordneten Parameter für den Export aus GRASS
+     * in die richtige Reihenfolge gebracht und die Methode zum Schreiben eines 
+     * Batch-Files aufgerufen.
+     * @param args Ungeordnete Argumente für den Export aus GRASS
+     * @return Erstellungsstatus Batch-File
+     */
     private boolean writeGrassExportBatch(HashMap<String, String> args) {
         String batchname = GRASSEXPORT + ".bat";
         String pythonmodule = GRASSEXPORT + ".py";
@@ -1013,6 +1090,14 @@ public class ModulContourlines {
         return this.writeGrassBatch(batchname, pythonmodule, properArgs);
     }
     
+    /**
+     * Methode zum Schreiben des Batch-Files für die Anwendung des Smooth-Algortihmus.
+     * In dieser Methode werden die ungeordneten Parameter die Anwendung des Smooth-Algortihmus
+     * in die richtige Reihenfolge gebracht und die Methode zum Schreiben eines 
+     * Batch-Files aufgerufen.
+     * @param args Ungeordnete Argumente für die Anwendung des Smooth-Algortihmus
+     * @return Erstellungsstatus Batch-File
+     */
     private boolean writeGrassSmoothBatch(HashMap<String, String> args) {
         String batchname = GRASSSMOOTH + ".bat";
         String pythonmodule = GRASSSMOOTH + ".py";
@@ -1041,6 +1126,14 @@ public class ModulContourlines {
         return this.writeGrassBatch(batchname, pythonmodule, properArgs);
     }
     
+    /**
+     * Methode zum Schreiben des Batch-Files für den Import in GRASS.
+     * In dieser Methode werden die ungeordneten Parameter für den Import in GRASS
+     * in die richtige Reihenfolge gebracht und die Methode zum Schreiben eines 
+     * Batch-Files aufgerufen.
+     * @param args Ungeordnete Argumente für den Import in GRASS
+     * @return Erstellungsstatus Batch-File
+     */
     private boolean writeGrassVectorImportBatch(HashMap<String, String> args) {
         String batchname = GRASSVECTORIMPORT + ".bat";
         String pythonmodule = GRASSVECTORIMPORT + ".py";
@@ -1054,6 +1147,15 @@ public class ModulContourlines {
         return this.writeGrassBatch(batchname, pythonmodule, properArgs);
     }
     
+    /**
+     * Basis-Methode zum Schreiben eines Batch-Files für die Nutzung von GRASS.
+     * In dieser Methode wird der Aufbau eines GRASS Batch-Files definiert und 
+     * anschliessend in das Zielverzeichnis kopiert.
+     * @param batchname Name des Batch-Files
+     * @param pythonmodule Name des auszuführenden Python-Moduls
+     * @param args Argumente für das Python-Modul
+     * @return Erstellungsstatus des Batch-Files
+     */
     private boolean writeGrassBatch(String batchname, String pythonmodule, 
             ArrayList<String> args) {
         if(pythonmodule.endsWith(".py")) {
@@ -1094,6 +1196,12 @@ public class ModulContourlines {
         return false;
     }
     
+    /**
+     * Methode zur Erstellung des GRASS-Mapset.
+     * In dieser Methode wird das GRASS-Mapset und die Gisrc-Datei in das Zielverzeichnis 
+     * kopiert.
+     * @return Erstellungsstatus GRASS-Mapset
+     */
     private boolean initializeGrass() {
         grassGisdbase = this.hConfig.getInputModel().getOutput().getAbsolutePath() + "\\"
                 + "grassmapset";
@@ -1140,6 +1248,9 @@ public class ModulContourlines {
         return false;
     }
     
+    /**
+     * Methode zum Löschen des GRASS-Mapset und der Gisrc-Datei aus dem Zielverzeichnis
+     */
     public void clearGrass() {
         String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
         String mapsetDir = baseOutputDir + GRASSMAPSETDIR;
@@ -1148,8 +1259,10 @@ public class ModulContourlines {
     }
     
     /**
-     * Methode zum Erstellen der Höhenlinien aus dem ASC-Auschnitt
-     * @return Erstellungsstatus
+     * Methode zum Erstellen der Höhenlinien aus dem ASC-Auschnitt.
+     * In dieser Methode werden die Höhenlinien aus der ASCII Grid DTM Datei mit 
+     * der GDAL-Methode gdal_contour erstellt.
+     * @return Erstellungsstatus Höhenlinien-Datensatz
      */
     private boolean makeContourlines() {
         try {
@@ -1237,13 +1350,23 @@ public class ModulContourlines {
     }
     
     /**
-     * Methode zum Ausdünnen der Punkte des ASC-Ausschnittes
-     * @return Erstellungsstatus
+     * Methode zum Ausdünnen der Punkte des ASC-Ausschnittes.
+     * In dieser Methode wird die ausgeschnittene ASCII Grid DTM Datei mit der 
+     * GDAL-Methode gdal_translate ausgedünnt und in eine neue Datei geschrieben.
+     * @return Erstellungsstatus ausgedünnte ASCII Grid DTM Datei
      */
     private boolean makeThinning() {
         int thinningVal = hConfig.getInputModel().getThinning();
         if(thinningVal != 0) {
             try {
+                if(thinningVal > 500) {
+                    this.logger.writeLog(LogPrefix.LOGERROR + "Der gewählte Wert "
+                            + "für die Ausdünnung ist etwas hoch: " + thinningVal + 
+                            ". Mit diesem Wert werden keine guten Höhenlinien gerechnet.");
+                    
+                    return false;
+                }
+                
                 double percentThinning = ((KACHEL_CELLSIZE * KACHEL_COLS) / thinningVal);
                 String source = baseData;
                 baseData = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\thin_output.asc";
@@ -1315,9 +1438,10 @@ public class ModulContourlines {
     }
     
     /**
-     * Methode, welche die zugeschnitte ASC-Datei zur Verfügung stellt.
-     * 
-     * @return Erstellungsstatus Ausschnitt
+     * Methode zur Erstellung der Grundlagen-Daten.
+     * In dieser Methode die Grundlagen-Daten erstellt. Der Ablauf unterscheidet 
+     * sich in der Standalone- und Modul-Ausführung.
+     * @return Erstellungsstatus Grundlagen-Daten
      */
     private boolean generateBase() {
         String errMsg = LogPrefix.LOGERROR + "Fehler beim Erstellen des Ausschnitts:\n";
@@ -1393,8 +1517,9 @@ public class ModulContourlines {
     
     /**
      * Methode zum Umwandeln der zugeschnittenen TIFF-Datei zu einer ASC-Datei.
-     * 
-     * @return Erstellungsstatus Umwandlung
+     * In dieser Methode wird die zugeschnittene TIFF-Datei mit der GDAL-Methode 
+     * gdal_translate in eine ASCII Grid DTM Datei konvertiert und abgespeichert.
+     * @return Erstellungsstatus ASCII Grid DTM Datei
      */
     private boolean translateTiffToASC() {
         try {
@@ -1452,9 +1577,11 @@ public class ModulContourlines {
     }
     
     /**
-     * Methode zum Zuschneiden einer VRT-Datei. Output ist eine TIFF-Datei
-     * 
-     * @return Erstellungsstatus Ausschnitt
+     * Methode zum Zuschneiden einer VRT-Datei.
+     * In dieser Methode wird die VRT-Datei mit der GDAL-Methode gdal_translate 
+     * zugeschnitten und als TIFF-Datei abgespeichert. In der Modul-Ausführung 
+     * wird die VRT-Datei nicht mehr zugeschnitten.
+     * @return Erstellungsstatus TIFF-Datei
      */
     private boolean translateVRTToTiff(){
         try {
@@ -1525,8 +1652,9 @@ public class ModulContourlines {
     }
     
     /**
-     * Methode zur Erstellung einer VRT-Datei aus den Kacheln
-     * 
+     * Methode zur Erstellung einer VRT-Datei aus den Kacheln.
+     * In dieser Methode wird aus den Kacheln mit der GDAL-Methode gdalbuildvrt 
+     * eine VRT-Datei erstellt.
      * @return Erstellungstatus VRT-Datei
      */
     private boolean generateVRT() {
@@ -1591,15 +1719,19 @@ public class ModulContourlines {
     }
     
     /**
-     * Methode zur Ermittlung der Kachelnnamen für die Erstellung einer VRT-Datei
-     * 
-     * @return Erstellungsstatus der Ermittlung der Kachelnamen.
+     * Methode zur Ermittlung der Kachelnnamen.
+     * In dieser Methode werden die Kachelnamen in der Standalone-Ausführung anhand 
+     * der Kachelnummern aus einem Verzeichnis geholt. In der Modul-Ausführung 
+     * werden alle Kachelnamen aus dem Verzeichnis geholt, in dem die einzelnen 
+     * zugeschnittenen Kacheln liegen.
+     * @return Ermittlungsstatus der Kachelnamen
      */
     private boolean collectKacheln() {
         DirectoryScanner scanner = new DirectoryScanner();
         
         //logger.writeLog("Die Kachelnnamen werden bezogen.\n ----------------");
         logger.writeLog(LogPrefix.LOGINFO + "Die Kachelnnamen werden bezogen.");
+        logger.writeStatus("Die Kacheln werden bezogen.");
         if(this.standalone) {
             for (String kachelnr : arrKachelnr) {
                 String[] splittedKachelnr = kachelnr.split("_");
@@ -1657,7 +1789,7 @@ public class ModulContourlines {
     }
     
     /**
-     * Methode zum Prüfen ob das Resultat auf der Festplatte existiert
+     * Methode zur Überprüfung, ob eine Datei existiert.
      * @param filepath Pfad zur Datei
      * @param errMsg Fehlermeldung
      * @return Existenzstatus
@@ -1674,6 +1806,12 @@ public class ModulContourlines {
         return true;
     }
     
+    /**
+     * Methode zum Löschen vorgängiger Dateien.
+     * In dieser Methode werden alle Dateien gelöscht, welche von einer vorherigen 
+     * Bestellung noch im Zielverzeichnis liegen könnten.
+     * @return Status, ob alle Dateien gelöscht sind
+     */
     private boolean clearOutputDir() {
         String baseOutputDir = hConfig.getInputModel().getOutput().getAbsolutePath() + "\\";
         String mapsetDir = baseOutputDir + GRASSMAPSETDIR;
@@ -1706,6 +1844,12 @@ public class ModulContourlines {
         return true;
     }
     
+    /**
+     * Methode zur Bereinigung nicht mehr benötigtet Dateien.
+     * In dieser Methode werden alle Dateien gelöscht, welche nicht mehr für die 
+     * Erstellung eines Höhenlinien-Datensatzes benötigt werden.
+     * @return Status, ob Datei gelöscht.
+     */
     private boolean deleteOldFiles() {
         for (String fileToDelete : filesToDelete) {
             if(!fileTool.deleteExistingFile(fileToDelete)) {

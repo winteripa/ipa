@@ -25,11 +25,11 @@ public class Startclass {
     private ModulContourlines module;
     
     /**
-     * Startmethode für die Ausführung des Moduls in der Standalone-Version
+     * Startmethode für die Ausführung des Moduls in der Standalone-Version.
      * @param hConfig Höhenlinien-Konfigurationsobjekt
      * @param arrKachelnr Liste mit allen Kachelnummern, welche mit dem gewählten Ausschnitt zu tun haben
      * @param logger Objekt eines DisplayMethods-Logger
-     * @return Erfolgsstatus der Erstellung eines Höhenlinien-Datensatzes
+     * @return Erstellungsstatus des Höhenlinien-Datensatzes
      */
     public boolean startModuleStandalone(HoehenlinienConfig hConfig, 
             ArrayList<String> arrKachelnr, DisplayMethods logger) {
@@ -43,7 +43,13 @@ public class Startclass {
     }
     
     
-    //Start-Methode für Modulbetrieb
+    /**
+     * Startmethode für die Ausführung des Moduls in der Modul-Version.
+     * @param params Zeichenkette mit Parametern im Format '-key=value '
+     * @param abrBL BusinessLogic-Objekt des Programms ABRaster (Für den Bezug der Pfade)
+     * @param logger Objekt eines DisplayMethods-Logger
+     * @return Erstellungsstatus des Höhenlinien-Datensatzes
+     */
     public boolean startModule(String params, BusinessLogic abrBL, DisplayMethods logger) {
         HoehenlinienConfig hConfig = new HoehenlinienConfig();
         FormatTools formatTool = new FormatTools();

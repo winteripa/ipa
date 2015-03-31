@@ -7,7 +7,7 @@
 package module;
 
 /**
- *
+ * Klasse mit Steuerungsparameter für die Anwendung des Hermite Smooth-Algorithmus.
  * @author u203011
  */
 public class HermiteSmooth {

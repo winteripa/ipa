@@ -18,7 +18,8 @@ import java.util.regex.Pattern;
 public class FormatTools {
     
     /**
-     * Methode zur Überprüfung des eingegeben Ausschnitts
+     * Methode zur Überprüfung des eingegeben Ausschnitts.
+     * Die Eingabe wird darauf überprüft, dass sie im Format xmin, ymin, xmax, ymax ist.
      * @param input Auschnitt-Rechteck
      * @return Validierungsstatus
      */
@@ -85,6 +86,13 @@ public class FormatTools {
         return wktString;
     }
     
+    /**
+     * Methode zur Extraktion der Argumente für das Modul.
+     * In dieser Methode werden die Parameter aus der Zeichenkette extrahiert.
+     * Das Format der Parameter in der Zeichenkette muss lauten: '-key=value '.
+     * @param params Zeichenkette mit Parametern
+     * @return Liste mit den Werten für die Konfigurationen
+     */
     public HashMap<String, String> extractModuleCommandlineParams(String params) {
         Pattern pattern = Pattern.compile("-(.*?) ");
         Matcher matcher = pattern.matcher(params);
@@ -149,6 +157,11 @@ public class FormatTools {
         return extractedParams;
     }
     
+    /**
+     * Methode zur Bestimmung der Länge eines Ausschnittes.
+     * @param inputRectangle Rechteck-Auschnitt
+     * @return Länge des Auschnittes
+     */
     public double getBoundaryWidth(String inputRectangle) {
         String[] splittedInput = inputRectangle.split(",");
         
@@ -158,6 +171,11 @@ public class FormatTools {
         return this.getEdgeLength(xOne, xTwo);
     }
     
+    /**
+     * Methode zur Bestimmung der Breite eines Ausschnittes.
+     * @param inputRectangle Rechteck-Auschnitt
+     * @return Breite des Auschnittes
+     */
     public double getBoundaryHeight(String inputRectangle) {
         String[] splittedInput = inputRectangle.split(",");
         
@@ -167,12 +185,23 @@ public class FormatTools {
         return this.getEdgeLength(yOne, yTwo);
     }
     
+    /**
+     * Methode zur Bestimmung der Kantenlänge.
+     * @param coordOne X- oder Y-Koordinate des ersten Punktes
+     * @param coordTwo X- oder Y-Koordinate des zweiten Punktes
+     * @return Kantelänge
+     */
     private double getEdgeLength(double coordOne, double coordTwo) {
         double length = Math.abs(coordTwo - coordOne);
         
         return length;
     }
     
+    /**
+     * Methode zum Entfernen der Leerzeichen im gewählten Auschnitt.
+     * @param rectangle Rechteck-Auschnitt mit Leerzeichen
+     * @return Rechteck-Auschnitt ohne Leerzeichen
+     */
     public String removeWhitespaceFromRectangle(String rectangle) {
         String[] splittedRectangle = rectangle.split(",");
         String properRectangle = splittedRectangle[0].trim() + "," 

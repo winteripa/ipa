@@ -28,7 +28,7 @@ public class DatabaseDAL implements IDAL {
     private DisplayMethods logger = null;
     
     /**
-     * Konstruktor für die Initialisierung der Datenbankverbindung
+     * Konstruktor für die Initialisierung der Datenbankverbindung.
      */
     public DatabaseDAL(DisplayMethods logger) {
         this.logger = logger;
@@ -45,6 +45,8 @@ public class DatabaseDAL implements IDAL {
     
     /**
      * Methode für den Erhalt der Kachelnummern aus der Datenbank.
+     * Alle Kachelnummern der Kacheln, welche sich mit dem vom Benutzer ausgewählten 
+     * Ausschnitt schneiden werden aus der PostGis-Datenbank zurückgegeben.
      * @param wktString Rechteckiger Auschnitt im WKT-Format
      * @return Liste mit allen Kachelnummern, welche mit dem gewählten Ausschnitt zu tun haben
      */
